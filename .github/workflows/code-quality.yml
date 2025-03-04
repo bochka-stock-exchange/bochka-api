@@ -9,9 +9,9 @@ jobs:
 
       - name: Linting
         run: uv run ruff check .
-      
+
       - name: Formatting
         run: uv run ruff format --check .
-      
+
       - name: Type Consistency
         run: uv run pyright .

@@ -12,4 +12,4 @@ runs:
         python-version-file: ".python-version"
 
     - name: Install the project
-        run: uv sync --all-extras --dev
+      run: uv sync --all-extras --dev
