@@ -1,8 +1,8 @@
 import pytest
 from httpx import ASGITransport, AsyncClient
 
-from src.app.main import app
-from src.app.config import get_settings
+from src.main import app
+from src.config import get_settings
 
 
 pytest_plugins = ["pytest_asyncio"]
