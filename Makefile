@@ -8,6 +8,7 @@ PRE_COMMIT = pre-commit
 PYTEST = pytest
 RUFF = ruff
 UVICORN = uvicorn
+PYRIGHT = pyright
 
 # Help command
 help:
@@ -23,6 +24,7 @@ help:
 	@echo "  check-install      - Install pre-commit hooks"
 	@echo "  lint               - Perform linting on all files using ruff"
 	@echo "  format             - Format all files using ruff format"
+	@echo "  type-check         - Run static type checking using pyright"
 	@echo "  test               - Test the app (runs lint and format first)"
 	@echo "  start              - Start the app using uvicorn"
 
@@ -66,12 +68,17 @@ lint:
 format:
 	$(UV) run $(RUFF) format .
 
-# Test the app (runs lint and format first)
-test: lint format
+# Run static type checking using pyright
+type-check:
+	$(UV) run $(PYRIGHT)
+
+# Test the app (runs lint, format, and type-check first)
+test: lint format type-check
 	$(UV) run $(PYTEST) -v --durations=0 --cov .
+
 
 # Start the app using uvicorn
 start:
 	$(UV) run $(UVICORN) src.app.main:app --host 0.0.0.0 --port 8000 --reload
 
-.PHONY: help up down up-prod down-prod migrate install-deps pre-commit pre-commit-install lint format test start
+.PHONY: help up down up-prod down-prod migrate install-deps pre-commit pre-commit-install lint format type-check test start
