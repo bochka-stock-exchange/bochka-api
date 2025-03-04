@@ -1,0 +1,8 @@
+venv/
+.github/
+.gitattributes
+.gitignore
+example.env
+README.MD
+.pre-commit-config.yaml
+.idea/

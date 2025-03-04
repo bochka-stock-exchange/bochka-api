@@ -32,6 +32,7 @@ source = { virtual = "." }
 dependencies = [
     { name = "fastapi", extra = ["standard"] },
     { name = "pydantic-settings" },
+    { name = "uvicorn" },
 ]
 
 [package.dev-dependencies]
@@ -48,6 +49,7 @@ dev = [
 requires-dist = [
     { name = "fastapi", extras = ["standard"], specifier = ">=0.115.11" },
     { name = "pydantic-settings", specifier = ">=2.8.1" },
+    { name = "uvicorn", specifier = ">=0.34.0" },
 ]
 
 [package.metadata.requires-dev]
