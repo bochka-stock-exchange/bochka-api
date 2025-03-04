@@ -1,0 +1,46 @@
+[project]
+name = "bochka-api"
+version = "0.1.0"
+description = "Stock exchange API"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi[standard]>=0.115.11",
+    "pydantic-settings>=2.8.1",
+]
+
+[dependency-groups]
+dev = [
+    "pyright>=1.1.396",
+    "pytest>=8.3.5",
+    "pytest-asyncio>=0.25.3",
+    "pytest-cov>=6.0.0",
+    "ruff>=0.9.9",
+]
+
+[tool.ruff]
+# Set the maximum line length to 79.
+line-length = 79
+
+[tool.ruff.lint]
+# Add the `line-too-long` rule to the enforced rule set. By default, Ruff omits rules that
+# overlap with the use of a formatter, like Black, but we can override this behavior by
+# explicitly adding the rule.
+extend-select = ["E501"]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "-ra"
+]
+testpaths = [
+    "tests",
+    "integration",
+]
+pythonpath = [
+    ".", "tests"
+]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
