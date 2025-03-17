@@ -1,18 +1,13 @@
-from sqlalchemy import Column, DateTime, MetaData, text
-from sqlalchemy.orm import DeclarativeBase, declared_attr
+from datetime import datetime
+
+from sqlalchemy import MetaData, func
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
 class Base(DeclarativeBase):
     """
     Base class for SQLAlchemy models with default metadata
     and timestamp columns.
-
-    This class defines a base model that other models can inherit from.
-    It sets up metadata with a naming convention for primary keys,
-    foreign keys, indexes,
-    unique constraints, and check constraints. Additionally,
-    it provides automatic
-    `created_at` and `updated_at` columns with UTC timestamps.
 
     Attributes:
         repr_cols_num (int): The default number of columns to display
@@ -31,22 +26,12 @@ class Base(DeclarativeBase):
         }
     )
 
-    @declared_attr
-    def created_at(cls):
-        return Column(
-            DateTime(timezone=True),
-            server_default=text("TIMEZONE('utc', NOW())"),
-            nullable=False,
-        )
-
-    @declared_attr
-    def updated_at(cls):
-        return Column(
-            DateTime(timezone=True),
-            server_default=text("TIMEZONE('utc', NOW())"),
-            onupdate=text("TIMEZONE('utc', NOW())"),
-            nullable=False,
-        )
+    created_at: Mapped[datetime] = mapped_column(
+        server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        server_default=func.now(), onupdate=func.now(), nullable=False
+    )
 
     repr_cols_num = 3
     repr_cols = tuple()
@@ -54,10 +39,6 @@ class Base(DeclarativeBase):
     def __repr__(self) -> str:
         """
         Generate a string representation of the model instance.
-
-        The representation includes a subset of the model's columns.
-        By default, it displays the first three columns
-        or the columns specified in `repr_cols`.
 
         :return: A string representation of the model instance.
         :rtype: str
