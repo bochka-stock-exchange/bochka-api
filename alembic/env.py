@@ -171,8 +171,15 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
+        def include_object(object, name, type_, reflected, compare_to):
+            if type_ == "table" and name == "seed_history":
+                return False
+            return True
+
         context.configure(
-            connection=connection, target_metadata=target_metadata
+            connection=connection,
+            target_metadata=target_metadata,
+            include_object=include_object,  # Добавляем фильтр
         )
 
         with context.begin_transaction():
