@@ -1,0 +1,43 @@
+name: "Advanced CodeQL Analysis"
+
+on:
+  push:
+    branches: [ "main", "dev" ]
+  pull_request:
+    branches: [ "main", "dev" ]
+
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      actions: read
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v2
+      with:
+        languages: python
+        queries: |
+          security-and-quality
+          security-extended
+          +security-experimental
+          +codeql/python-queries
+
+    - name: Autobuild
+      uses: github/codeql-action/autobuild@v2
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v2
+      with:
+        category: "/language:python"
+        upload: true
+
+    - name: Upload results to Security tab
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: results.sarif
