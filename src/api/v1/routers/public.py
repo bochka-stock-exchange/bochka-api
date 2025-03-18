@@ -4,7 +4,7 @@ from fastapi import APIRouter
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.db.db import async_session_factory, get_transaction_session
+from src.db.db import manager
 from src.models import User
 from src.models.user import UserRole
 
@@ -78,7 +78,7 @@ async def update_user_test(
 ):
     if role and role not in UserRole:
         return False
-    async with get_transaction_session() as sess:
+    async with manager.begin_transaction_session() as sess:
         a = await update_t(
             sess,
             user_id,
@@ -89,7 +89,7 @@ async def update_user_test(
 
 @router.post("/users/create")
 async def create_user_test():
-    async with get_transaction_session() as sess:
+    async with manager.begin_transaction_session() as sess:
         a = await create_t(
             sess,
             {"name": "Pudge", "role": UserRole.USER, "api_key": "asdfasdfas"},
@@ -99,13 +99,13 @@ async def create_user_test():
 
 @router.get("/users/get")
 async def get_user_test(user_id: str):
-    async with async_session_factory() as sess:
+    async with manager.begin_transaction_session() as sess:
         a = await get_t(sess, user_id)
         return a
 
 
 @router.get("/users/get/all")
 async def get_all_users():
-    async with get_transaction_session() as sess:
+    async with manager.begin_transaction_session() as sess:
         result = await sess.execute(select(User))
         return result.scalars().all()
