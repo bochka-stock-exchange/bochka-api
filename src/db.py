@@ -1,4 +1,3 @@
-from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
 from sqlalchemy import AsyncAdaptedQueuePool, NullPool
@@ -45,13 +44,9 @@ class DatabaseManager:
             bind=self.engine, class_=AsyncSession, expire_on_commit=False
         )
 
-    @asynccontextmanager
-    async def begin_transaction_session(
-        self,
-    ) -> AsyncGenerator[AsyncSession, None]:
+    async def get_async_session(self) -> AsyncGenerator[AsyncSession, None]:
         async with self.session_factory() as session:
-            async with session.begin():
-                yield session
+            yield session
 
 
 manager = DatabaseManager()
