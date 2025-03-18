@@ -4,7 +4,7 @@ from fastapi import APIRouter
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.db.db import manager
+from src.db import manager
 from src.models import User
 from src.models.user import UserRole
 
