@@ -1,14 +1,18 @@
-from typing import Optional
+from typing import Annotated, Optional
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.db import manager
 from src.models import User
 from src.models.user import UserRole
+from src.uow import UnitOfWork
 
 router = APIRouter(prefix="/public", tags=["public"])
+
+
+def get_uow() -> UnitOfWork:
+    return UnitOfWork()
 
 
 @router.post("/healthcheck")
@@ -72,15 +76,16 @@ async def update_t(
 @router.patch("/users/update")
 async def update_user_test(
     user_id: str,
+    uow: Annotated[UnitOfWork, Depends(get_uow)],
     name: Optional[str] = None,
     role: Optional[str] = None,
     api_key: Optional[str] = None,
 ):
     if role and role not in UserRole:
         return False
-    async with manager.begin_transaction_session() as sess:
+    async with uow:
         a = await update_t(
-            sess,
+            uow.session,
             user_id,
             {"name": name, "role": role, "api_key": api_key},
         )
@@ -88,24 +93,26 @@ async def update_user_test(
 
 
 @router.post("/users/create")
-async def create_user_test():
-    async with manager.begin_transaction_session() as sess:
+async def create_user_test(uow: Annotated[UnitOfWork, Depends(get_uow)]):
+    async with uow:
         a = await create_t(
-            sess,
+            uow.session,
             {"name": "Pudge", "role": UserRole.USER, "api_key": "asdfasdfas"},
         )
         return a
 
 
 @router.get("/users/get")
-async def get_user_test(user_id: str):
-    async with manager.begin_transaction_session() as sess:
-        a = await get_t(sess, user_id)
+async def get_user_test(
+    user_id: str, uow: Annotated[UnitOfWork, Depends(get_uow)]
+):
+    async with uow:
+        a = await get_t(uow.session, user_id)
         return a
 
 
 @router.get("/users/get/all")
-async def get_all_users():
-    async with manager.begin_transaction_session() as sess:
-        result = await sess.execute(select(User))
+async def get_all_users(uow: Annotated[UnitOfWork, Depends(get_uow)]):
+    async with uow:
+        result = await uow.session.execute(select(User))
         return result.scalars().all()
