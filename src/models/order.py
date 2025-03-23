@@ -12,19 +12,19 @@ if TYPE_CHECKING:
     from src.models.user import User
 
 
-class OrderType(enum.Enum):
+class OrderType(str, enum.Enum):
     LIMIT = "LIMIT"
     MARKET = "MARKET"
 
 
-class OrderStatus(enum.Enum):
+class OrderStatus(str, enum.Enum):
     NEW = "NEW"
     EXECUTED = "EXECUTED"
     PARTIALLY_EXECUTED = "PARTIALLY_EXECUTED"
     CANCELLED = "CANCELLED"
 
 
-class Direction(enum.Enum):
+class Direction(str, enum.Enum):
     BUY = "BUY"
     SELL = "SELL"
 
@@ -33,32 +33,24 @@ class Order(Base):
     __tablename__ = "orders"
     repr_cols = ("id", "user_id", "ticker")
 
-    id: Mapped[UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid7
-    )
+    id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid7)
     user_id: Mapped[UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("users.id"), nullable=False
     )
     status: Mapped[OrderStatus] = mapped_column(
         Enum(OrderStatus), default=OrderStatus.NEW, nullable=False
     )
-    direction: Mapped[Direction] = mapped_column(
-        Enum(Direction), nullable=False
-    )
+    direction: Mapped[Direction] = mapped_column(Enum(Direction), nullable=False)
     ticker: Mapped[str] = mapped_column(
         String(10), ForeignKey("instruments.ticker"), nullable=False
     )
     qty: Mapped[int] = mapped_column(Integer, nullable=False)
     price: Mapped[int] = mapped_column(Integer)
-    order_type: Mapped[OrderType] = mapped_column(
-        Enum(OrderType), nullable=False
-    )
+    order_type: Mapped[OrderType] = mapped_column(Enum(OrderType), nullable=False)
     filled: Mapped[int] = mapped_column(Integer, default=0)
 
     user: Mapped["User"] = relationship("User", back_populates="orders")
-    instrument: Mapped["Instrument"] = relationship(
-        "Instrument", back_populates="orders"
-    )
+    instrument: Mapped["Instrument"] = relationship("Instrument", back_populates="orders")
 
 
 class Transaction(Base):
@@ -72,6 +64,4 @@ class Transaction(Base):
     amount: Mapped[int] = mapped_column(Integer, nullable=False)
     price: Mapped[int] = mapped_column(Integer, nullable=False)
 
-    instrument: Mapped["Instrument"] = relationship(
-        "Instrument", back_populates="transactions"
-    )
+    instrument: Mapped["Instrument"] = relationship("Instrument", back_populates="transactions")

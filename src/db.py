@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
 from sqlalchemy import AsyncAdaptedQueuePool, NullPool
@@ -12,41 +13,31 @@ from src.config import get_settings
 
 
 class DatabaseManager:
-    def __init__(self, pool: bool = True):
+    def __init__(self):
         self.settings = get_settings()
-        self.engine = (
-            self._create_engine() if pool else self._create_null_pool_engine()
-        )
+        self.engine = self._create_engine()
         self.session_factory = self._create_session_factory()
 
     def _create_engine(self) -> AsyncEngine:
         return create_async_engine(
             str(self.settings.DATABASE_URL),
-            echo=False,
-            poolclass=AsyncAdaptedQueuePool,
-            future=True,
-            pool_size=5,
-            max_overflow=10,
-            pool_timeout=30,
-            pool_recycle=900,
-        )
-
-    def _create_null_pool_engine(self) -> AsyncEngine:
-        return create_async_engine(
-            str(self.settings.DATABASE_URL),
-            echo=False,
-            poolclass=NullPool,
-            future=True,
+            echo=self.settings.DEBUG,
+            poolclass=NullPool if self.settings.DEBUG else AsyncAdaptedQueuePool,
+            pool_recycle=900 if not self.settings.DEBUG else -1,
         )
 
     def _create_session_factory(self) -> async_sessionmaker[AsyncSession]:
-        return async_sessionmaker(
-            bind=self.engine, class_=AsyncSession, expire_on_commit=False
-        )
+        return async_sessionmaker(bind=self.engine, class_=AsyncSession, expire_on_commit=False)
 
-    async def get_async_session(self) -> AsyncGenerator[AsyncSession, None]:
-        async with self.session_factory() as session:
+    async def get_session(self) -> AsyncGenerator[AsyncSession, None]:
+        async with self.session_factory.begin() as session:
+            yield session
+
+    # for manual testing
+    @asynccontextmanager
+    async def session_context(self) -> AsyncGenerator[AsyncSession, None]:
+        async with self.session_factory.begin() as session:
             yield session
 
 
-manager = DatabaseManager()
+db_manager = DatabaseManager()

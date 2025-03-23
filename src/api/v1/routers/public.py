@@ -1,18 +1,18 @@
-from typing import Annotated, Optional
+from typing import Annotated
 
-from fastapi import APIRouter, Depends
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter, Depends, HTTPException, status
 
-from src.models import User
-from src.models.user import UserRole
-from src.uow import UnitOfWork
+from src.api.v1.dependencies import (
+    InstrumentServiceDependency,
+    SessionDependency,
+    UserServiceDependency,
+    get_admin_user,
+    get_current_user,
+)
+from src.schemas.instrument import InstrumentRead
+from src.schemas.user import UserCreate, UserRead
 
 router = APIRouter(prefix="/public", tags=["public"])
-
-
-def get_uow() -> UnitOfWork:
-    return UnitOfWork()
 
 
 @router.post("/healthcheck")
@@ -20,14 +20,40 @@ async def healthcheck():
     return 1
 
 
-@router.post("/register")
-async def register():
-    raise NotImplementedError()
+@router.post("/register", response_model=UserRead)
+async def register(
+    user_create: UserCreate,
+    service: UserServiceDependency,
+    session: SessionDependency,
+):
+    try:
+        user = await service.create(session, user_create)
+        return user
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
 
 
-@router.get("/instrument")
-async def get_instruments():
-    raise NotImplementedError()
+@router.get("/profile", response_model=UserRead)
+async def get_profile(
+    current_user: Annotated[UserRead, Depends(get_current_user)],
+):
+    return current_user
+
+
+@router.get("/check-admin", response_model=UserRead)
+async def check_admin(
+    current_user: Annotated[UserRead, Depends(get_admin_user)],
+):
+    return current_user
+
+
+@router.get("/instrument", response_model=list[InstrumentRead])
+async def get_instruments(service: InstrumentServiceDependency, session: SessionDependency):
+    try:
+        instruments = await service.read_all(session)
+        return instruments
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
 
 
 @router.get("/orderbook/{ticker}")
@@ -40,6 +66,7 @@ async def get_transactions(ticker: str):
     raise NotImplementedError()
 
 
+"""
 async def create_t(
     session: AsyncSession,
     data,
@@ -116,3 +143,4 @@ async def get_all_users(uow: Annotated[UnitOfWork, Depends(get_uow)]):
     async with uow:
         result = await uow.session.execute(select(User))
         return result.scalars().all()
+"""

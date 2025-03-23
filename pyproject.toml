@@ -26,8 +26,8 @@ dev = [
 ]
 
 [tool.ruff]
-# Set the maximum line length to 79.
-line-length = 79
+# Set the maximum line length to 100.
+line-length = 100
 
 # Assume Python 3.11
 target-version = "py313"

@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from src.models.user import User
 
 
-class OperationType(enum.Enum):
+class OperationType(str, enum.Enum):
     DEPOSIT = "DEPOSIT"
     WITHDRAW = "WITHDRAW"
 
@@ -31,18 +31,14 @@ class Balance(Base):
     amount: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
 
     user: Mapped["User"] = relationship("User", back_populates="balances")
-    instrument: Mapped["Instrument"] = relationship(
-        "Instrument", back_populates="balances"
-    )
+    instrument: Mapped["Instrument"] = relationship("Instrument", back_populates="balances")
 
 
 class BalanceOperation(Base):
     __tablename__ = "balance_operations"
     repr_cols = ("id", "user_id", "ticker")
 
-    id: Mapped[UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid7
-    )
+    id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid7)
     user_id: Mapped[UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("users.id"), nullable=False
     )
@@ -50,9 +46,7 @@ class BalanceOperation(Base):
         String(10), ForeignKey("instruments.ticker"), nullable=False
     )
     amount: Mapped[int] = mapped_column(Integer, nullable=False)
-    operation_type: Mapped[OperationType] = mapped_column(
-        Enum(OperationType), nullable=False
-    )
+    operation_type: Mapped[OperationType] = mapped_column(Enum(OperationType), nullable=False)
 
     user: Mapped["User"] = relationship("User", back_populates="operations")
     instrument: Mapped["Instrument"] = relationship(

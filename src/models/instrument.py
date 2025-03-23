@@ -13,15 +13,11 @@ class Instrument(Base):
     ticker: Mapped[str] = mapped_column(String(10), primary_key=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
 
-    balances: Mapped[list["Balance"]] = relationship(
-        "Balance", back_populates="instrument"
-    )
+    balances: Mapped[list["Balance"]] = relationship("Balance", back_populates="instrument")
     balance_operations: Mapped[list["BalanceOperation"]] = relationship(
         "BalanceOperation", back_populates="instrument"
     )
-    orders: Mapped[list["Order"]] = relationship(
-        "Order", back_populates="instrument"
-    )
+    orders: Mapped[list["Order"]] = relationship("Order", back_populates="instrument")
     transactions: Mapped[list["Transaction"]] = relationship(
         "Transaction", back_populates="instrument"
     )

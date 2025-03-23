@@ -21,9 +21,7 @@ def add_middlewares(application: FastAPI) -> None:
     )
 
     if not settings.DEBUG:
-        application.add_middleware(
-            TrustedHostMiddleware, allowed_hosts=settings.ALLOW_HOSTS
-        )
+        application.add_middleware(TrustedHostMiddleware, allowed_hosts=settings.ALLOW_HOSTS)
 
 
 def create_app() -> FastAPI:
