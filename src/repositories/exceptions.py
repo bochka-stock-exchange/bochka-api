@@ -4,8 +4,6 @@ from typing import Union
 class RepositoryError(Exception):
     """Base exception class for repository errors."""
 
-    pass
-
 
 class EntityCreateError(RepositoryError):
     """Raised when an entity cannot be created."""
@@ -58,5 +56,5 @@ class EntityDeleteError(RepositoryError):
     ):
         super().__init__(
             f"{repo_name} failed to delete entity in {table_name} "
-            f"with reading parameters: {read_param}. Reason: {reason}"  #
+            f"with reading parameters: {read_param}. Reason: {reason}"
         )
