@@ -1,4 +1,3 @@
-from functools import lru_cache
 from pathlib import Path
 
 from pydantic import PostgresDsn
@@ -7,7 +6,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     APP_TITLE: str = "Bochka stock exchange"
-    APP_DESCRIPTION: str = "API for Bochka stock exchang"
+    APP_DESCRIPTION: str = "API for Bochka stock exchange"
     APP_VERSION: str = "0.1.0"
 
     DEBUG: bool = False
@@ -34,13 +33,17 @@ class Settings(BaseSettings):
 
     @property
     def DATABASE_URL(self) -> PostgresDsn:
-        return PostgresDsn(
-            f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
-        )  # noqa
+        return PostgresDsn.build(
+            scheme="postgresql+asyncpg",
+            username=self.POSTGRES_USER,
+            password=self.POSTGRES_PASSWORD,
+            host=self.POSTGRES_HOST,
+            port=self.POSTGRES_PORT,
+            path=self.POSTGRES_DB,
+        )
 
     model_config = SettingsConfigDict(env_file=Path(__file__).parents[1] / ".env", extra="ignore")
 
 
-@lru_cache
 def get_settings():
     return Settings()
