@@ -5,12 +5,14 @@ from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 from uuid_v7.base import uuid7
 
-from src.db import db_manager
+from src.db import get_db_manager
 from src.main import app
 from src.models.base import Base
 from src.models.user import User, UserRole
 
 pytest_plugins = ["pytest_asyncio"]
+
+db_manager = get_db_manager()
 
 
 @pytest.fixture(scope="session")

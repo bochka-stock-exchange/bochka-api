@@ -40,4 +40,5 @@ class DatabaseManager:
             yield session
 
 
-db_manager = DatabaseManager()
+def get_db_manager():
+    return DatabaseManager()

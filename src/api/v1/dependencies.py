@@ -7,10 +7,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 import src.models as models
 import src.services as services
 from src.config import get_settings
-from src.db import db_manager
+from src.db import get_db_manager
 from src.schemas.user import UserRead
 
 settings = get_settings()
+db_manager = get_db_manager()
 
 Session = Annotated[AsyncSession, Depends(db_manager.get_session)]
 
