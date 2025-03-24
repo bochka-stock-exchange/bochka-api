@@ -3,7 +3,10 @@ from pathlib import Path
 from pydantic import PostgresDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from src.utils.singleton import SingletonDecorator
 
+
+@SingletonDecorator
 class Settings(BaseSettings):
     APP_TITLE: str = "Bochka stock exchange"
     APP_DESCRIPTION: str = "API for Bochka stock exchange"
@@ -46,4 +49,4 @@ class Settings(BaseSettings):
 
 
 def get_settings():
-    return Settings()
+    return Settings.get_instance()

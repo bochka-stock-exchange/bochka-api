@@ -10,10 +10,11 @@ from sqlalchemy.ext.asyncio import (
 )
 
 from src.config import get_settings
-from src.utils.singleton import Singleton
+from src.utils.singleton import SingletonDecorator
 
 
-class DatabaseManager(metaclass=Singleton):
+@SingletonDecorator
+class DatabaseManager:
     def __init__(self):
         self.settings = get_settings()
         self.engine = self._create_engine()
@@ -42,4 +43,4 @@ class DatabaseManager(metaclass=Singleton):
 
 
 def get_db_manager():
-    return DatabaseManager()
+    return DatabaseManager.get_instance()
