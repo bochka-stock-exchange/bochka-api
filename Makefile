@@ -8,6 +8,7 @@ MAKEFLAGS += --no-print-directory
 # Variables
 DOCKER_COMPOSE = docker-compose
 DOCKER_COMPOSE_PROD = docker-compose -f docker-compose.prod.yml
+DOCKER_COMPOSE_TEST = docker-compose -f docker-compose.tests.yml
 ALEMBIC = alembic
 UV = uv
 PRE_COMMIT = pre-commit
@@ -36,6 +37,7 @@ help:
 	@echo "  lint               - Perform linting on all files using ruff"
 	@echo "  format             - Format all files using ruff format"
 	@echo "  type-check         - Run static type checking using pyright"
+	@echo "  pytest             - Run tests using pytest"
 	@echo "  test               - Test the app (runs lint and format first)"
 	@echo "== Application =="
 	@echo "  start              - Start the app using uvicorn"
@@ -91,9 +93,13 @@ format:
 type-check:
 	$(UV) run $(PYRIGHT)
 
+# Run tests using pytest
+pytest:
+	$(DOCKER_COMPOSE_TEST) up --build --abort-on-container-exit
+	$(DOCKER_COMPOSE_TEST) down
+
 # Test the app (runs lint, format, and type-check first)
-test: lint format type-check
-	$(UV) run $(PYTEST) -v --durations=0 --cov .
+test: lint format type-check pytest
 
 # Start the app using uvicorn
 start:
@@ -128,4 +134,4 @@ winit: install-deps create-env-windows
 # Start the development environment and the app
 dev: up migrate start
 
-.PHONY: help up down up-prod down-prod migrate install-deps pre-commit pre-commit-install lint format type-check test start create-env-unix create-env-windows init-unix init-windows dev
+.PHONY: help up down up-prod down-prod migrate install-deps pre-commit pre-commit-install lint format type-check pytest test start create-env-unix create-env-windows init-unix init-windows dev

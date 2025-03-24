@@ -3,9 +3,7 @@ services:
     container_name: app_for_tests
     build:
       context: .
-      dockerfile: Dockerfile.tests
-    entrypoint: ["/entrypoint_tests.sh"]
-    command: []
+      dockerfile: docker/Dockerfile.tests
     environment:
       DEBUG: "True"
       POSTGRES_USER: "postgres"
@@ -20,7 +18,7 @@ services:
 
   tests_db:
     container_name: db_for_tests
-    image: postgres:16-alpine
+    image: postgres:17-alpine
     environment:
       POSTGRES_USER: "postgres"
       POSTGRES_PASSWORD: "postgres"
