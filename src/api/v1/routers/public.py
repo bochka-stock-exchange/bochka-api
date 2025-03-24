@@ -22,7 +22,7 @@ async def register(
     try:
         user = await users_service.create(session, user_create)
         return user
-    except Exception as e:
+    except service_exceptions.EntityCreateError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
 
 

@@ -1,8 +1,6 @@
 class ServiceError(Exception):
     """Base exception class for service errors."""
 
-    pass
-
 
 class EntityCreateError(ServiceError):
     """Raised when an entity cannot be created in the service layer."""
