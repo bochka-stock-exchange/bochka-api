@@ -10,9 +10,10 @@ from sqlalchemy.ext.asyncio import (
 )
 
 from src.config import get_settings
+from src.utils.singleton import Singleton
 
 
-class DatabaseManager:
+class DatabaseManager(metaclass=Singleton):
     def __init__(self):
         self.settings = get_settings()
         self.engine = self._create_engine()
