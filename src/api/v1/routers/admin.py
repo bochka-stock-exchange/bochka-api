@@ -22,6 +22,22 @@ async def create_instrument(
     service: InstrumentServiceDependency,
     session: SessionDependency,
 ):
+    """
+    Creates a new instrument and returns its details.
+    
+    This function uses the provided instrument creation payload to create a new
+    instrument via the service layer. If the creation process encounters an error,
+    an HTTPException with a 400 status code is raised.
+    
+    Args:
+        instrument: Data required for creating the instrument.
+    
+    Returns:
+        The details of the newly created instrument.
+    
+    Raises:
+        HTTPException: If instrument creation fails.
+    """
     try:
         new_instrument = await service.create(session, instrument)
         return new_instrument
@@ -35,6 +51,22 @@ async def delete_instrument(
     service: InstrumentServiceDependency,
     session: SessionDependency,
 ):
+    """
+    Delete an instrument by its ticker.
+    
+    Removes an instrument identified by its ticker from the system. Returns a success
+    response upon deletion, and raises an HTTPException with a 400 status code for a deletion
+    error or a 404 status code if the instrument is not found.
+    
+    Args:
+        ticker: The ticker identifier of the instrument to delete.
+    
+    Returns:
+        A dictionary with a key 'success' set to True if the deletion is successful.
+    
+    Raises:
+        HTTPException: If deletion fails due to an error or if the instrument is missing.
+    """
     try:
         await service.delete_by_id(session, ticker)
 

@@ -18,13 +18,20 @@ LOG_FORMAT = "%(asctime)s - %(levelname)s - %(name)s - %(message)s"  # noqa: Typ
 
 def setup_logger(name: str, log_file: Path, level: int = logging.INFO) -> logging.Logger:
     """
-    Sets up a logger with a TimedRotatingFileHandler and optionally console output.
+    Configure a logger with daily file rotation and optional console logging.
+    
+    This function creates or retrieves a logger by name, sets its logging level, and attaches a
+    TimedRotatingFileHandler that rotates the log file at midnight with up to 7 backups. Log message
+    propagation is disabled, and if debug mode is enabled in the settings, a console handler is also
+    attached.
+    
     Args:
-        name (str): Name of the logger.
-        log_file (Path): Path to the log file.
-        level (int): Logging level.
+        name (str): The identifier for the logger.
+        log_file (Path): The file path to store log output.
+        level (int): The logging level threshold.
+    
     Returns:
-        logging.Logger: Configured logger.
+        logging.Logger: The configured logger instance.
     """
     logger = logging.getLogger(name)
     logger.setLevel(level)

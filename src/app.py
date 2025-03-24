@@ -9,6 +9,13 @@ settings = get_settings()
 
 
 def add_middlewares(application: FastAPI) -> None:
+    """
+    Configure middlewares for the FastAPI application.
+    
+    Adds CORS middleware using settings-defined origins, credential support, and
+    permissive HTTP methods and headers. In non-debug mode, also adds trusted host
+    middleware to restrict requests to allowed hosts.
+    """
     application.add_middleware(
         CORSMiddleware,
         allow_origins=settings.ALLOW_ORIGINS,
@@ -22,6 +29,15 @@ def add_middlewares(application: FastAPI) -> None:
 
 
 def create_app() -> FastAPI:
+    """
+    Creates and configures a FastAPI application instance.
+    
+    The application is initialized with settings for debug mode, title, description,
+    and version. It also includes the API router under the specified prefix.
+    
+    Returns:
+        FastAPI: The configured FastAPI application instance.
+    """
     app = FastAPI(
         debug=settings.DEBUG,
         title=settings.APP_TITLE,

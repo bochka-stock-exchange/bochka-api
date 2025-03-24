@@ -27,6 +27,11 @@ async def get_current_user(
     session: SessionDependency,
     token: Annotated[Optional[str], Security(authorization_header)],
 ) -> UserRead:
+    """
+    Authenticates the request using the provided API token and returns the corresponding user.
+    
+    Validates that the token is provided and starts with "TOKEN ". Extracts the API key and retrieves the user from the database using the user service and session. Raises an HTTPException with a 401 status code if the token is missing, improperly formatted, or does not match any user.
+    """
     if not token:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Токен отсутствует")
 
@@ -48,6 +53,13 @@ async def get_current_user(
 async def get_admin_user(
     current_user: Annotated[UserRead, Depends(get_current_user)],
 ) -> UserRead:
+    """
+    Validates that the current user has administrative privileges.
+    
+    This function checks if the authenticated user, provided through dependency injection, has the admin role.
+    If the user does not have admin rights, an HTTPException with a 403 status is raised.
+    Otherwise, the function returns the authenticated user.
+    """
     if current_user.role != UserRole.ADMIN:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Требуется роль Администратор")
     return current_user

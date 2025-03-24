@@ -17,9 +17,28 @@ ModelType = TypeVar("ModelType", bound=Base)
 
 class SQLAlchemyRepository(Generic[ModelType]):
     def __init__(self, model: type[ModelType]):
+        """
+        Initialize the repository with the specified SQLAlchemy model.
+        
+        Args:
+            model: A SQLAlchemy model class representing the entity for CRUD operations.
+        """
         self.model = model
 
     async def create(self, session: AsyncSession, data: dict) -> ModelType:
+        """
+        Creates a new model instance in the database.
+        
+        Constructs a new instance using the provided data, adds it to the session,
+        flushes pending changes, and refreshes the instance to obtain its updated state.
+        Raises an EntityCreateError if any error occurs during creation.
+        
+        Args:
+            data: A dictionary containing the attributes for creating the model instance.
+        
+        Returns:
+            The newly created model instance.
+        """
         repository_logger.info(f"Creating a new {self.model.__name__}: {data}")
 
         try:
@@ -40,6 +59,22 @@ class SQLAlchemyRepository(Generic[ModelType]):
         return instance
 
     async def create_many(self, session: AsyncSession, data_list: list[dict]) -> list[ModelType]:
+        """
+        Creates multiple model entities asynchronously.
+        
+        Instantiates multiple model objects from the provided list of data dictionaries, adds all
+        to the session, flushes the session, and refreshes each instance. An EntityCreateError is
+        raised if any error occurs during these operations.
+        
+        Args:
+            data_list: A list of dictionaries containing initialization data for each model instance.
+        
+        Returns:
+            The list of newly created model instances.
+        
+        Raises:
+            EntityCreateError: If an exception occurs during entity creation.
+        """
         repository_logger.info(f"Creating multiple {self.model.__name__} entities")
 
         try:
@@ -63,6 +98,22 @@ class SQLAlchemyRepository(Generic[ModelType]):
     async def read_by_id(
         self, session: AsyncSession, entity_id: Union[int, str]
     ) -> Optional[ModelType]:
+        """
+        Retrieve a model instance by its ID.
+        
+        This asynchronous function fetches an entity from the database using the provided identifier.
+        It logs the retrieval process and, if an error occurs during the fetch, logs the error details before
+        raising an EntityReadError. If no entity is found, a warning is logged and None is returned.
+        
+        Parameters:
+            entity_id: The unique identifier of the entity to retrieve.
+        
+        Returns:
+            The fetched model instance if found; otherwise, None.
+        
+        Raises:
+            EntityReadError: If an error occurs while retrieving the entity.
+        """
         repository_logger.info(f"Fetching {self.model.__name__} by ID: {entity_id}")
 
         try:
@@ -89,6 +140,13 @@ class SQLAlchemyRepository(Generic[ModelType]):
     async def read_all(
         self, session: AsyncSession, page: int = 1, limit: int = 10
     ) -> Sequence[ModelType]:
+        """
+        Retrieves paginated model entities.
+        
+        This asynchronous method fetches a subset of model instances using the specified
+        page and limit values to compute the query offset. If an error occurs during the
+        database fetch, an EntityReadError is raised.
+        """
         repository_logger.info(
             f"Fetching all {self.model.__name__} entities. Page: {page}, Limit: {limit}"
         )
@@ -113,6 +171,19 @@ class SQLAlchemyRepository(Generic[ModelType]):
     async def update_by_id(
         self, session: AsyncSession, entity_id: Union[int, str], data: dict
     ) -> Optional[ModelType]:
+        """
+        Update an entity by its ID with new values.
+        
+        Args:
+            entity_id: The identifier of the entity to update.
+            data: A dictionary of attribute-value pairs to update on the entity.
+        
+        Returns:
+            The updated entity instance if found; otherwise, None.
+        
+        Raises:
+            EntityUpdateError: If an error occurs during the update process.
+        """
         repository_logger.info(f"Updating {self.model.__name__} with ID: {entity_id}, Data: {data}")
 
         try:
@@ -143,6 +214,16 @@ class SQLAlchemyRepository(Generic[ModelType]):
         return instance
 
     async def delete_by_id(self, session: AsyncSession, entity_id: Union[int, str]) -> bool:
+        """
+        Deletes an entity with the specified ID from the database.
+        
+        This method attempts to locate the entity by its ID. If found, it deletes the entity from
+        the session and flushes the changes. It returns True if deletion is performed, or False if no
+        entity with the given ID exists.
+        
+        Raises:
+            EntityDeleteError: If an error occurs during the deletion process.
+        """
         repository_logger.info(f"Deleting {self.model.__name__} with ID: {entity_id}")
 
         try:

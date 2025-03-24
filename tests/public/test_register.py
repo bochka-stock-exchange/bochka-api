@@ -10,6 +10,13 @@ pytestmark = pytest.mark.asyncio(loop_scope="session")
 
 
 async def test_register_users_success(client: AsyncClient):
+    """
+    Test successful registration of users.
+    
+    Sends two POST requests to the /public/register endpoint with valid user data and
+    verifies that each response returns a 200 OK status, that the registered user's name
+    and default role are correct, and that the API key is prefixed with "key-".
+    """
     user_data = {"name": "Test User"}
     response = await client.post("/public/register", json=user_data)
 
@@ -45,6 +52,12 @@ async def test_transaction_rollback_check(db_session: AsyncSession):
 
 
 async def test_register_user_invalid_data(client: AsyncClient):
+    """
+    Tests registration endpoint with invalid user data.
+    
+    Sends a POST request with a name that is too short and asserts that the response
+    returns a 422 status code with error details.
+    """
     user_data = {"name": "ab"}
     response = await client.post("/public/register", json=user_data)
 

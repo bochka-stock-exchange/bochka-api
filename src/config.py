@@ -32,6 +32,12 @@ class Settings(BaseSettings):
 
     @property
     def DATABASE_URL(self) -> PostgresDsn:
+        """
+        Constructs a PostgreSQL DSN for asynchronous connections.
+        
+        Returns a validated PostgreSQL connection string assembled from the instance's
+        database configuration (user, password, host, port, and database name).
+        """
         return PostgresDsn(
             f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
         )  # noqa
