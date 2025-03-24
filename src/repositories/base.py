@@ -120,7 +120,6 @@ class SQLAlchemyRepository(Generic[ModelType]):
             if instance:
                 for key, value in data.items():
                     setattr(instance, key, value)
-                # session.add(instance)
                 await session.flush()
                 await session.refresh(instance)
         except Exception as e:

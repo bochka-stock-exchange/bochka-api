@@ -9,9 +9,6 @@ settings = get_settings()
 
 
 def add_middlewares(application: FastAPI) -> None:
-    """
-    Adds necessary middleware components to the FastAPI application.
-    """
     application.add_middleware(
         CORSMiddleware,
         allow_origins=settings.ALLOW_ORIGINS,
@@ -25,11 +22,6 @@ def add_middlewares(application: FastAPI) -> None:
 
 
 def create_app() -> FastAPI:
-    """
-    Creates and configures the FastAPI application instance, setting up
-    resources, middlewares, and routing.
-    """
-
     app = FastAPI(
         debug=settings.DEBUG,
         title=settings.APP_TITLE,
