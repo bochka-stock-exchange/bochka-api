@@ -28,6 +28,8 @@ class Settings(BaseSettings):
 
     API_PREFIX: str = "/api"
 
+    TOKEN_PREFIX: str = "Token"
+
     MAX_IMAGE_SIZE: int = 1024 * 1024 * 10  # 10 MB
 
     @property

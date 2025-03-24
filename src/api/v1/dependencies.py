@@ -6,8 +6,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 import src.models as models
 import src.services as services
+from src.config import get_settings
 from src.db import db_manager
 from src.schemas.user import UserRead
+
+settings = get_settings()
 
 Session = Annotated[AsyncSession, Depends(db_manager.get_session)]
 
@@ -34,14 +37,12 @@ async def get_current_user(
     if not token:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Токен отсутствует")
 
-    prefix = "TOKEN "
-
-    if not token.startswith(prefix):
+    if not token.startswith(settings.TOKEN_PREFIX):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Неверный формат токена"
         )
 
-    api_key = token[len(prefix) :].strip()
+    api_key = token[len(settings.TOKEN_PREFIX) + 1 :].strip()
     user = await service.get_by_api_key(session, api_key)
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Неверный токен")
