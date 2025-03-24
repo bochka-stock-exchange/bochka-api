@@ -4,6 +4,7 @@
 [![Dockerized](https://img.shields.io/badge/Docker-Supported-blue)](https://www.docker.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![Educational Project](https://img.shields.io/badge/Status-Educational-orange)](https://github.com/your-repo)
+![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/bochka-stock-exchange/bochka-api?utm_source=oss&utm_medium=github&utm_campaign=bochka-stock-exchange%2Fbochka-api&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
 
 ## 🎯 About the Project
 🚀 **bochka-api** is a stock market simulation API built for educational purposes. It allows users to trade financial instruments in a sandboxed environment. This project is **not intended for real-world financial applications** and should not be used for actual trading.
