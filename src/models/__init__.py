@@ -2,7 +2,7 @@ from src.models.balance import Balance, BalanceOperation
 from src.models.base import Base
 from src.models.instrument import Instrument
 from src.models.order import Order, Transaction
-from src.models.user import User
+from src.models.user import User, UserRole
 
 __all__ = [
     "Base",
@@ -12,4 +12,5 @@ __all__ = [
     "Transaction",
     "Instrument",
     "User",
+    "UserRole",
 ]

@@ -1,11 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
+import src.api.v1.dependencies as dependencies
 import src.services.exceptions as service_exceptions
-from src.api.v1.dependencies import (
-    InstrumentServiceDependency,
-    SessionDependency,
-    get_admin_user,
-)
 from src.schemas.instrument import InstrumentCreate, InstrumentRead
 
 router = APIRouter(prefix="/admin", tags=["admin"])
@@ -14,29 +10,29 @@ router = APIRouter(prefix="/admin", tags=["admin"])
 @router.post(
     "/instrument",
     status_code=status.HTTP_201_CREATED,
-    dependencies=[Depends(get_admin_user)],
+    dependencies=[Depends(dependencies.get_admin_user)],
     response_model=InstrumentRead,
 )
 async def create_instrument(
     instrument: InstrumentCreate,
-    service: InstrumentServiceDependency,
-    session: SessionDependency,
+    instruments_service: dependencies.InstrumentsService,
+    session: dependencies.Session,
 ):
     try:
-        new_instrument = await service.create(session, instrument)
+        new_instrument = await instruments_service.create(session, instrument)
         return new_instrument
     except service_exceptions.EntityCreateError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
 
 
-@router.delete("/instrument/{ticker}", dependencies=[Depends(get_admin_user)])
+@router.delete("/instrument/{ticker}", dependencies=[Depends(dependencies.get_admin_user)])
 async def delete_instrument(
     ticker: str,
-    service: InstrumentServiceDependency,
-    session: SessionDependency,
+    instruments_service: dependencies.InstrumentsService,
+    session: dependencies.Session,
 ):
     try:
-        await service.delete_by_id(session, ticker)
+        await instruments_service.delete_by_id(session, ticker)
 
         return {"success": True}
     except service_exceptions.EntityDeleteError as de:

@@ -1,11 +1,11 @@
-from src.repositories.instrument import InstrumentRepository
+import src.repositories as repositories
+import src.services as services
 from src.schemas.instrument import InstrumentCreate, InstrumentRead
-from src.services.base import BaseService
 
 
-class InstrumentService(BaseService[InstrumentCreate, InstrumentRead, InstrumentCreate]):
+class InstrumentsService(services.BaseService[InstrumentCreate, InstrumentRead, InstrumentCreate]):
     def __init__(self):
-        repo = InstrumentRepository()
+        repo = repositories.InstrumentsRepository()
         super().__init__(
             repo,
             create_schema=InstrumentCreate,

@@ -4,16 +4,15 @@ from fastapi import Depends, HTTPException, Security, status
 from fastapi.security import APIKeyHeader
 from sqlalchemy.ext.asyncio import AsyncSession
 
+import src.models as models
+import src.services as services
 from src.db import db_manager
-from src.models.user import UserRole
 from src.schemas.user import UserRead
-from src.services.instrument import InstrumentService
-from src.services.user import UserService
 
-UserServiceDependency = Annotated[UserService, Depends()]
-InstrumentServiceDependency = Annotated[InstrumentService, Depends()]
-SessionDependency = Annotated[AsyncSession, Depends(db_manager.get_session)]
+Session = Annotated[AsyncSession, Depends(db_manager.get_session)]
 
+UsersService = Annotated[services.UsersService, Depends()]
+InstrumentsService = Annotated[services.InstrumentsService, Depends()]
 
 authorization_header = APIKeyHeader(
     name="Authorization",
@@ -21,11 +20,16 @@ authorization_header = APIKeyHeader(
     description="Authorization: TOKEN <api_key>",
 )
 
+Token = Annotated[
+    Optional[str],
+    Security(authorization_header),
+]
+
 
 async def get_current_user(
-    service: UserServiceDependency,
-    session: SessionDependency,
-    token: Annotated[Optional[str], Security(authorization_header)],
+    service: UsersService,
+    session: Session,
+    token: Token,
 ) -> UserRead:
     if not token:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Токен отсутствует")
@@ -45,9 +49,15 @@ async def get_current_user(
     return user
 
 
+CurrentUser = Annotated[UserRead, Depends(get_current_user)]
+
+
 async def get_admin_user(
-    current_user: Annotated[UserRead, Depends(get_current_user)],
+    current_user: CurrentUser,
 ) -> UserRead:
-    if current_user.role != UserRole.ADMIN:
+    if current_user.role != models.UserRole.ADMIN:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Требуется роль Администратор")
     return current_user
+
+
+AdminUser = Annotated[UserRead, Depends(get_admin_user)]

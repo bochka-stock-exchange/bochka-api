@@ -3,16 +3,11 @@ from typing import Generic, Optional, Sequence, TypeVar, Union
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+import src.models as models
+import src.repositories as repositories
 from src.logger import repository_logger
-from src.models import Base
-from src.repositories.exceptions import (
-    EntityCreateError,
-    EntityDeleteError,
-    EntityReadError,
-    EntityUpdateError,
-)
 
-ModelType = TypeVar("ModelType", bound=Base)
+ModelType = TypeVar("ModelType", bound=models.Base)
 
 
 class SQLAlchemyRepository(Generic[ModelType]):
@@ -32,7 +27,7 @@ class SQLAlchemyRepository(Generic[ModelType]):
                 f"Error creating {self.model.__name__}: {data}, Error: {e}",
                 exc_info=True,
             )
-            raise EntityCreateError(
+            raise repositories.exceptions.EntityCreateError(
                 self.__class__.__name__, self.model.__tablename__, str(e)
             ) from e
 
@@ -53,7 +48,7 @@ class SQLAlchemyRepository(Generic[ModelType]):
                 f"Error creating multiple {self.model.__name__} entities: {e}",
                 exc_info=True,
             )
-            raise EntityCreateError(
+            raise repositories.exceptions.EntityCreateError(
                 self.__class__.__name__, self.model.__tablename__, str(e)
             ) from e
 
@@ -72,7 +67,7 @@ class SQLAlchemyRepository(Generic[ModelType]):
                 f"Error fetching {self.model.__name__} with ID: {entity_id}, Error: {e}",
                 exc_info=True,
             )
-            raise EntityReadError(
+            raise repositories.exceptions.EntityReadError(
                 self.__class__.__name__,
                 self.model.__tablename__,
                 f"entity_id: {entity_id}",
@@ -103,7 +98,7 @@ class SQLAlchemyRepository(Generic[ModelType]):
                 f"Error fetching all {self.model.__name__} entities, Error: {e}",
                 exc_info=True,
             )
-            raise EntityReadError(
+            raise repositories.exceptions.EntityReadError(
                 self.__class__.__name__, self.model.__tablename__, "", str(e)
             ) from e
 
@@ -127,7 +122,7 @@ class SQLAlchemyRepository(Generic[ModelType]):
                 f"Error updating {self.model.__name__} with ID: {entity_id}, Error: {e}",
                 exc_info=True,
             )
-            raise EntityUpdateError(
+            raise repositories.exceptions.EntityUpdateError(
                 self.__class__.__name__,
                 self.model.__tablename__,
                 f"entity_id: {entity_id}",
@@ -157,7 +152,7 @@ class SQLAlchemyRepository(Generic[ModelType]):
                 f"Error deleting {self.model.__name__} with ID: {entity_id}, Error: {e}",
                 exc_info=True,
             )
-            raise EntityDeleteError(
+            raise repositories.exceptions.EntityDeleteError(
                 self.__class__.__name__,
                 self.model.__tablename__,
                 f"entity_id: {entity_id}",

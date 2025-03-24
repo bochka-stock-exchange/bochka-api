@@ -3,10 +3,9 @@ from typing import Generic, Optional, TypeVar, Union
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
-import src.repositories.exceptions as repo_exceptions
-import src.services.exceptions as service_exceptions
+import src.repositories as repositories
+import src.services as services
 from src.logger import service_logger
-from src.repositories.base import SQLAlchemyRepository
 
 TCreate = TypeVar("TCreate", bound=BaseModel)
 TRead = TypeVar("TRead", bound=BaseModel)
@@ -16,7 +15,7 @@ TUpdate = TypeVar("TUpdate", bound=BaseModel)
 class BaseService(Generic[TCreate, TRead, TUpdate]):
     def __init__(
         self,
-        repo: SQLAlchemyRepository,
+        repo: repositories.SQLAlchemyRepository,
         create_schema: type[TCreate],
         read_schema: type[TRead],
         update_schema: type[TUpdate],
@@ -34,9 +33,9 @@ class BaseService(Generic[TCreate, TRead, TUpdate]):
         try:
             entity = await self.repo.create(session, data)
 
-        except repo_exceptions.EntityCreateError as e:
+        except repositories.exceptions.EntityCreateError as e:
             service_logger.error(f"Error creating {self.create_schema.__name__}: {str(e)}")
-            raise service_exceptions.EntityCreateError(self.__class__.__name__, str(e)) from e
+            raise services.exceptions.EntityCreateError(self.__class__.__name__, str(e)) from e
 
         service_logger.info(f"Successfully created {self.create_schema.__name__}.")
 
@@ -57,9 +56,9 @@ class BaseService(Generic[TCreate, TRead, TUpdate]):
         try:
             entities = await self.repo.create_many(session, data)
 
-        except repo_exceptions.EntityCreateError as e:
+        except repositories.exceptions.EntityCreateError as e:
             service_logger.error(f"Error creating entities: {str(e)}")
-            raise service_exceptions.EntityCreateError(self.__class__.__name__, str(e)) from e
+            raise services.exceptions.EntityCreateError(self.__class__.__name__, str(e)) from e
 
         validated_entities: list[TRead] = [
             self.read_schema.model_validate(entity) for entity in entities
@@ -74,15 +73,15 @@ class BaseService(Generic[TCreate, TRead, TUpdate]):
         try:
             entity = await self.repo.read_by_id(session, entity_id)
 
-        except repo_exceptions.EntityReadError as e:
+        except repositories.exceptions.EntityReadError as e:
             service_logger.error(
                 f"Error reading {self.read_schema.__name__} with ID {entity_id}: {str(e)}"
             )
-            raise service_exceptions.EntityReadError(self.__class__.__name__, str(e)) from e
+            raise services.exceptions.EntityReadError(self.__class__.__name__, str(e)) from e
 
         if not entity:
             service_logger.error(f"Entity with ID {entity_id} not found.")
-            raise service_exceptions.EntityNotFoundError(
+            raise services.exceptions.EntityNotFoundError(
                 self.__class__.__name__, f"entity_id: {entity_id}"
             )
 
@@ -99,9 +98,9 @@ class BaseService(Generic[TCreate, TRead, TUpdate]):
         try:
             entities = await self.repo.read_all(session, page, limit)
 
-        except repo_exceptions.EntityReadError as e:
+        except repositories.exceptions.EntityReadError as e:
             service_logger.error(f"Error reading all entities: {str(e)}")
-            raise service_exceptions.EntityReadError(self.__class__.__name__, str(e)) from e
+            raise services.exceptions.EntityReadError(self.__class__.__name__, str(e)) from e
 
         validated_entities = [self.read_schema.model_validate(e) for e in entities]
 
@@ -123,13 +122,13 @@ class BaseService(Generic[TCreate, TRead, TUpdate]):
 
             if not updated_entity:
                 service_logger.error(f"Entity with ID {entity_id} not found for update.")
-                raise service_exceptions.EntityNotFoundError(
+                raise services.exceptions.EntityNotFoundError(
                     self.__class__.__name__, f"entity_id: {entity_id}"
                 )
 
-        except repo_exceptions.EntityUpdateError as e:
+        except repositories.exceptions.EntityUpdateError as e:
             service_logger.error(f"Error updating entity with ID {entity_id}: {str(e)}")
-            raise service_exceptions.EntityUpdateError(self.__class__.__name__, str(e)) from e
+            raise services.exceptions.EntityUpdateError(self.__class__.__name__, str(e)) from e
 
         service_logger.info(
             f"Successfully updated {self.update_schema.__name__} with ID {entity_id}."
@@ -142,13 +141,13 @@ class BaseService(Generic[TCreate, TRead, TUpdate]):
         try:
             is_deleted = await self.repo.delete_by_id(session, entity_id)
 
-        except repo_exceptions.EntityDeleteError as e:
+        except repositories.exceptions.EntityDeleteError as e:
             service_logger.error(f"Error deleting entity with ID {entity_id}: {str(e)}")
-            raise service_exceptions.EntityDeleteError(self.__class__.__name__, str(e)) from e
+            raise services.exceptions.EntityDeleteError(self.__class__.__name__, str(e)) from e
 
         if not is_deleted:
             service_logger.error(f"Entity with ID {entity_id} not found for deletion.")
-            raise service_exceptions.EntityNotFoundError(
+            raise services.exceptions.EntityNotFoundError(
                 self.__class__.__name__, f"entity_id: {entity_id}"
             )
 
