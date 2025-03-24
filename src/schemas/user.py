@@ -6,13 +6,16 @@ from pydantic import BaseModel, ConfigDict, Field
 from src.models.user import UserRole
 
 
-class UserCreate(BaseModel):
+class UserBase(BaseModel):
     name: Annotated[str, Field(min_length=3, max_length=255)]
 
 
-class UserRead(BaseModel):
+class UserCreate(UserBase):
+    pass
+
+
+class UserRead(UserBase):
     id: UUID
-    name: str
     role: UserRole
     api_key: str
 

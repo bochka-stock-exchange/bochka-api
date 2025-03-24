@@ -29,7 +29,7 @@ class BaseService(Generic[TCreate, TRead, TUpdate]):
     async def create(self, session: AsyncSession, create_schema: TCreate) -> TRead:
         service_logger.info(f"Creating {self.create_schema.__name__} entity.")
 
-        data = self.pre_create(create_schema.model_dump(exclude_unset=True))
+        data = self.prepare_data(create_schema.model_dump(exclude_unset=True))
 
         try:
             entity = await self.repo.create(session, data)
@@ -39,11 +39,12 @@ class BaseService(Generic[TCreate, TRead, TUpdate]):
             raise service_exceptions.EntityCreateError(self.__class__.__name__, str(e)) from e
 
         service_logger.info(f"Successfully created {self.create_schema.__name__}.")
+
         return self.read_schema.model_validate(entity)
 
     # способ изменить данные перед созданием без изменения Create схемы,
     # например, для генерации каких-либо значений перед созданием
-    def pre_create(self, data: dict) -> dict:
+    def prepare_data(self, data: dict) -> dict:
         return data
 
     async def create_many(

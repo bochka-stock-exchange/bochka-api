@@ -3,12 +3,14 @@ from typing import Annotated
 from pydantic import BaseModel, ConfigDict, Field
 
 
-class InstrumentCreate(BaseModel):
+class InstumentBase(BaseModel):
     ticker: Annotated[str, Field(pattern="^[A-Z]{2,10}$")]
     name: Annotated[str, Field(max_length=255)]
 
 
-class InstrumentRead(BaseModel):
-    ticker: str
-    name: str
+class InstrumentCreate(InstumentBase):
+    pass
+
+
+class InstrumentRead(InstumentBase):
     model_config = ConfigDict(from_attributes=True)

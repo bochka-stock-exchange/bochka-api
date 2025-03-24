@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
+import src.services.exceptions as service_exceptions
 from src.api.v1.dependencies import (
     InstrumentServiceDependency,
     SessionDependency,
@@ -24,7 +25,7 @@ async def create_instrument(
     try:
         new_instrument = await service.create(session, instrument)
         return new_instrument
-    except Exception as e:
+    except service_exceptions.EntityCreateError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
 
 
@@ -35,12 +36,10 @@ async def delete_instrument(
     session: SessionDependency,
 ):
     try:
-        success = await service.delete_by_id(session, ticker)
-        if not success:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Instrument not found",
-            )
+        await service.delete_by_id(session, ticker)
+
         return {"success": True}
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
+    except service_exceptions.EntityDeleteError as de:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(de)) from de
+    except service_exceptions.EntityNotFoundError as nfe:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(nfe)) from nfe

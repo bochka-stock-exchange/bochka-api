@@ -1,6 +1,7 @@
 import pytest
 
+pytestmark = pytest.mark.asyncio(loop_scope="session")
 
-@pytest.mark.asyncio
+
 async def test_get_wastes_types():
     assert "test" == "test"

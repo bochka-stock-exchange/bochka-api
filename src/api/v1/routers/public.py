@@ -2,6 +2,9 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
+import src.schemas.instrument as instrument_schemas
+import src.schemas.user as user_schemas
+import src.services.exceptions as service_exceptions
 from src.api.v1.dependencies import (
     InstrumentServiceDependency,
     SessionDependency,
@@ -9,8 +12,6 @@ from src.api.v1.dependencies import (
     get_admin_user,
     get_current_user,
 )
-from src.schemas.instrument import InstrumentRead
-from src.schemas.user import UserCreate, UserRead
 
 router = APIRouter(prefix="/public", tags=["public"])
 
@@ -20,9 +21,9 @@ async def healthcheck():
     return 1
 
 
-@router.post("/register", response_model=UserRead)
+@router.post("/register", response_model=user_schemas.UserRead)
 async def register(
-    user_create: UserCreate,
+    user_create: user_schemas.UserCreate,
     service: UserServiceDependency,
     session: SessionDependency,
 ):
@@ -33,26 +34,26 @@ async def register(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
 
 
-@router.get("/profile", response_model=UserRead)
+@router.get("/profile", response_model=user_schemas.UserRead)
 async def get_profile(
-    current_user: Annotated[UserRead, Depends(get_current_user)],
+    current_user: Annotated[user_schemas.UserRead, Depends(get_current_user)],
 ):
     return current_user
 
 
-@router.get("/check-admin", response_model=UserRead)
+@router.get("/check-admin", response_model=user_schemas.UserRead)
 async def check_admin(
-    current_user: Annotated[UserRead, Depends(get_admin_user)],
+    current_user: Annotated[user_schemas.UserRead, Depends(get_admin_user)],
 ):
     return current_user
 
 
-@router.get("/instrument", response_model=list[InstrumentRead])
+@router.get("/instrument", response_model=list[instrument_schemas.InstrumentRead])
 async def get_instruments(service: InstrumentServiceDependency, session: SessionDependency):
     try:
         instruments = await service.read_all(session)
         return instruments
-    except Exception as e:
+    except service_exceptions.EntityReadError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
 
 
