@@ -23,10 +23,10 @@ async def test_register_users_success(client: AsyncClient):
     response = await client.post("/public/register", json=user_data)
 
     assert response.status_code == status.HTTP_200_OK
-    json_response2 = response.json()
-    assert json_response2["name"] == "Test User2"
-    assert json_response2["role"] == "USER"
-    assert json_response2["api_key"].startswith("key-")
+    json_response = response.json()
+    assert json_response["name"] == "Test User2"
+    assert json_response["role"] == "USER"
+    assert json_response["api_key"].startswith("key-")
 
 
 async def test_transaction_rollback_check(db_session: AsyncSession):

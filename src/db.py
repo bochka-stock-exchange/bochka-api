@@ -43,4 +43,4 @@ class DatabaseManager:
 
 
 def get_db_manager():
-    return DatabaseManager.get_instance()
+    return DatabaseManager()
