@@ -18,10 +18,13 @@ Session = Annotated[AsyncSession, Depends(db_manager.get_session)]
 UsersService = Annotated[services.UsersService, Depends()]
 InstrumentsService = Annotated[services.InstrumentsService, Depends()]
 
+
+token_prefix = getattr(settings, "TOKEN_PREFIX", "TOKEN")
+
 authorization_header = APIKeyHeader(
     name="Authorization",
     auto_error=False,
-    description="Authorization: TOKEN <api_key>",
+    description=f"Authorization: {token_prefix} <api_key>",
 )
 
 Token = Annotated[
@@ -37,8 +40,6 @@ async def get_current_user(
 ) -> UserRead:
     if not token:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token is missing")
-
-    token_prefix = getattr(settings, "TOKEN_PREFIX", "TOKEN")
 
     if not token.startswith(token_prefix):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token format")

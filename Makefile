@@ -99,10 +99,10 @@ pytest:
 	$(DOCKER_COMPOSE_TEST) down
 
 # Test the app (runs lint, format, and type-check first)
-test: lint format type-check pytest
-
-test-local: lint format type-check
+test: lint format type-check
 	$(UV) run $(PYTEST) -v --durations=0 .
+
+test-docker: lint format type-check pytest
 
 # Start the app using uvicorn
 start:
@@ -137,4 +137,4 @@ winit: install-deps create-env-windows
 # Start the development environment and the app
 dev: up migrate start
 
-.PHONY: help up down up-prod down-prod migrate install-deps pre-commit pre-commit-install lint format type-check pytest test test-local start create-env-unix create-env-windows init-unix init-windows dev
+.PHONY: help up down up-prod down-prod migrate install-deps pre-commit pre-commit-install lint format type-check pytest test test-docker start create-env-unix create-env-windows init-unix init-windows dev
