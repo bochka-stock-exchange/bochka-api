@@ -55,9 +55,9 @@ def SingletonDecorator(cls: type[T]) -> type:
         cls.__name__,
         (cls,),
         {
+            **cls.__dict__,
             "__init__": __init__,
             "get_instance": classmethod(get_instance),
-            **cls.__dict__,
         },
     )
 
