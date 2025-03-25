@@ -35,17 +35,15 @@ async def get_current_user(
     token: Token,
 ) -> UserRead:
     if not token:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Токен отсутствует")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token is missing")
 
     if not token.startswith(settings.TOKEN_PREFIX):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Неверный формат токена"
-        )
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token format")
 
     api_key = token[len(settings.TOKEN_PREFIX) + 1 :].strip()
     user = await service.get_by_api_key(session, api_key)
     if not user:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Неверный токен")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
 
     return user
 
@@ -57,7 +55,7 @@ async def get_admin_user(
     current_user: CurrentUser,
 ) -> UserRead:
     if current_user.role != settings.ADMIN_ROLE:
-        raise HTTPException(status.HTTP_403_FORBIDDEN, "Требуется роль Администратор")
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Administrator role required")
     return current_user
 
 

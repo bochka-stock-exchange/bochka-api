@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import MetaData, func
+from sqlalchemy import DateTime, MetaData, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -26,9 +26,14 @@ class Base(DeclarativeBase):
         }
     )
 
-    created_at: Mapped[datetime] = mapped_column(server_default=func.now(), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.timezone("UTC", func.now()), nullable=False
+    )
     updated_at: Mapped[datetime] = mapped_column(
-        server_default=func.now(), onupdate=func.now(), nullable=False
+        DateTime(timezone=True),
+        server_default=func.timezone("UTC", func.now()),
+        onupdate=func.timezone("UTC", func.now()),
+        nullable=False,
     )
 
     repr_cols_num = 3
