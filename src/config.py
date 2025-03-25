@@ -31,6 +31,8 @@ class Settings(BaseSettings):
     API_PREFIX: str = "/api"
 
     TOKEN_PREFIX: str = "TOKEN"
+    USER_ROLE: str = "USER"
+    ADMIN_ROLE: str = "ADMIN"
 
     MAX_IMAGE_SIZE: int = 1024 * 1024 * 10  # 10 MB
 
