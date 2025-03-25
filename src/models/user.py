@@ -16,8 +16,8 @@ settings = get_settings()
 
 
 class UserRole(str, enum.Enum):
-    USER = settings.USER_ROLE
-    ADMIN = settings.ADMIN_ROLE
+    USER = getattr(settings, "USER_ROLE", "USER")
+    ADMIN = getattr(settings, "ADMIN_ROLE", "ADMIN")
 
 
 class User(Base):
