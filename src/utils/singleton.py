@@ -36,9 +36,7 @@ def SingletonDecorator(cls: type[T]) -> type:
         return instance
 
     def __init__(self, *args, **kwargs):
-        nonlocal instance
-        if instance is not self:
-            raise RuntimeError("Use get_instance() to create a singleton instance.")
+        raise RuntimeError("Use get_instance() to create a singleton instance.")
 
     """
     X = type('X', (A,B), dict(a=1))
