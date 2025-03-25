@@ -22,6 +22,13 @@ T = TypeVar("T")
 
 
 def SingletonDecorator(cls: type[T]) -> type:
+    """
+    Singleton Decorator for classes
+    The decorated class has to be instantiated with cls.get_instance(*args, **kwargs)
+    The Metaclass approach causes conflicts with other metaclasses of a class
+    We also cannot override __new__ method because it can be
+    defined in the decorated class or the parent class
+    """
     instance = None
     lock = threading.Lock()
     original_init = cls.__init__

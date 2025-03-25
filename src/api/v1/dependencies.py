@@ -4,7 +4,6 @@ from fastapi import Depends, HTTPException, Security, status
 from fastapi.security import APIKeyHeader
 from sqlalchemy.ext.asyncio import AsyncSession
 
-import src.models as models
 import src.services as services
 from src.config import get_settings
 from src.db import get_db_manager
@@ -57,7 +56,7 @@ CurrentUser = Annotated[UserRead, Depends(get_current_user)]
 async def get_admin_user(
     current_user: CurrentUser,
 ) -> UserRead:
-    if current_user.role != models.UserRole.ADMIN:
+    if current_user.role != settings.ADMIN_ROLE:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Требуется роль Администратор")
     return current_user
 

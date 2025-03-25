@@ -20,9 +20,7 @@ class EntityNotFoundError(ServiceError):
     """Raised when an entity cannot be found for a given operation, such as update or delete."""
 
     def __init__(self, service_name: str, read_param: str):
-        super().__init__(
-            f"{service_name} couldn't find entity with reading parameters: {read_param}."
-        )
+        super().__init__(f"{service_name} failed to find entity with identifier: {read_param}.")
 
 
 class EntityUpdateError(ServiceError):
