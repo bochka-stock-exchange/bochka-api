@@ -4,7 +4,7 @@ from typing import TypeVar
 T = TypeVar("T")
 
 
-def SingletonDecorator(cls: type[T]) -> type:
+def Singleton(cls: type[T]) -> type:
     """
     A thread-safe singleton decorator
     Respects the original class's __new__ and __init__ methods
@@ -30,7 +30,7 @@ def SingletonDecorator(cls: type[T]) -> type:
 
         Example:
 
-        @SingletonDecorator
+        @Singleton
         class Settings:
             def __init__(self, value):
                 self.value = value

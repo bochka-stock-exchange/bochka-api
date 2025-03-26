@@ -13,7 +13,7 @@ import src.config as alembic_config
 import src.utils as utils
 
 
-@utils.SingletonDecorator
+@utils.Singleton
 class DatabaseManager:
     def __init__(self):
         self.settings = alembic_config.get_settings()

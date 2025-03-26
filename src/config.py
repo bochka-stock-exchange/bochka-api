@@ -52,7 +52,7 @@ class MongoDBSettings(BaseSettings):
         return str(self.DSN)
 
 
-@utils.SingletonDecorator
+@utils.Singleton
 class Settings(BaseSettings):
     APP_TITLE: str = "Bochka stock exchange"
     APP_DESCRIPTION: str = "API for Bochka stock exchange"

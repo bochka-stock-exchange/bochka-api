@@ -1,5 +1,5 @@
-from .singleton import SingletonDecorator
+from .singleton import Singleton
 
 __all__ = [
-    "SingletonDecorator",
+    "Singleton",
 ]

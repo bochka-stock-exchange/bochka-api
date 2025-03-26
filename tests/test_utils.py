@@ -6,7 +6,7 @@ pytestmark = pytest.mark.asyncio(loop_scope="session")
 
 
 async def test_singleton():
-    @utils.SingletonDecorator
+    @utils.Singleton
     class Decorated:
         def __init__(self, value):
             self.value = value
