@@ -10,10 +10,10 @@ from sqlalchemy.ext.asyncio import (
 )
 
 import src.config as alembic_config
-from src.utils.singleton import SingletonDecorator
+import src.utils as utils
 
 
-@SingletonDecorator
+@utils.SingletonDecorator
 class DatabaseManager:
     def __init__(self):
         self.settings = alembic_config.get_settings()
