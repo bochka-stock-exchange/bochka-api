@@ -2,10 +2,10 @@ from fastapi import FastAPI
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from starlette.middleware.cors import CORSMiddleware
 
-from src.api.v1 import router as api_v1_router
-from src.config import get_settings
+import src.api as api
+import src.config as alembic_config
 
-settings = get_settings()
+settings = alembic_config.get_settings()
 
 
 def add_middlewares(application: FastAPI) -> None:
@@ -29,6 +29,6 @@ def create_app() -> FastAPI:
         version=settings.APP_VERSION,
     )
 
-    app.include_router(api_v1_router, prefix=settings.API_PREFIX)
+    app.include_router(api.v1.router, prefix=settings.API_PREFIX)
 
     return app

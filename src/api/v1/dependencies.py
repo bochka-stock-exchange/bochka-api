@@ -4,13 +4,13 @@ from fastapi import Depends, HTTPException, Security, status
 from fastapi.security import APIKeyHeader
 from sqlalchemy.ext.asyncio import AsyncSession
 
+import src.config as alembic_config
+import src.schemas as schemas
 import src.services as services
-from src.config import get_settings
 from src.db import get_db_manager
 from src.models import UserRole
-from src.schemas.user import UserRead
 
-settings = get_settings()
+settings = alembic_config.get_settings()
 db_manager = get_db_manager()
 
 DBSession = Annotated[AsyncSession, Depends(db_manager.get_session)]
@@ -37,7 +37,7 @@ async def get_current_user(
     service: UsersService,
     session: DBSession,
     token: Token,
-) -> UserRead:
+) -> schemas.UserRead:
     if not token:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token is missing")
 
@@ -52,15 +52,15 @@ async def get_current_user(
     return user
 
 
-CurrentUser = Annotated[UserRead, Depends(get_current_user)]
+CurrentUser = Annotated[schemas.UserRead, Depends(get_current_user)]
 
 
 async def get_admin_user(
     current_user: CurrentUser,
-) -> UserRead:
+) -> schemas.UserRead:
     if current_user.role != UserRole.ADMIN:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Administrator role required")
     return current_user
 
 
-AdminUser = Annotated[UserRead, Depends(get_admin_user)]
+AdminUser = Annotated[schemas.UserRead, Depends(get_admin_user)]

@@ -9,14 +9,14 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
-from src.config import get_settings
+import src.config as alembic_config
 from src.utils.singleton import SingletonDecorator
 
 
 @SingletonDecorator
 class DatabaseManager:
     def __init__(self):
-        self.settings = get_settings()
+        self.settings = alembic_config.get_settings()
         self.engine = self._create_engine()
         self.session_factory = self._create_session_factory()
 

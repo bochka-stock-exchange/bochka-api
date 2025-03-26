@@ -2,9 +2,9 @@ import logging
 from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
 
-from src.config import get_settings
+import src.config as alembic_config
 
-settings = get_settings()
+settings = alembic_config.get_settings()
 
 LOG_DIR = Path("logs")
 LOG_DIR.mkdir(exist_ok=True)

@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
 import src.api.v1.dependencies as dependencies
-import src.services.exceptions as service_exceptions
-from src.schemas.instrument import InstrumentCreate, InstrumentRead
+import src.schemas as schemas
+import src.services as services
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -11,17 +11,17 @@ router = APIRouter(prefix="/admin", tags=["admin"])
     "/instrument",
     status_code=status.HTTP_201_CREATED,
     dependencies=[Depends(dependencies.get_admin_user)],
-    response_model=InstrumentRead,
+    response_model=schemas.InstrumentRead,
 )
 async def create_instrument(
-    instrument: InstrumentCreate,
+    instrument: schemas.InstrumentCreate,
     instruments_service: dependencies.InstrumentsService,
     session: dependencies.DBSession,
 ):
     try:
         new_instrument = await instruments_service.create(session, instrument)
         return new_instrument
-    except service_exceptions.EntityCreateError as e:
+    except services.exceptions.EntityCreateError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
 
 
@@ -35,7 +35,7 @@ async def delete_instrument(
         await instruments_service.delete_by_id(session, ticker)
 
         return {"success": True}
-    except service_exceptions.EntityDeleteError as de:
+    except services.exceptions.EntityDeleteError as de:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(de)) from de
-    except service_exceptions.EntityNotFoundError as nfe:
+    except services.exceptions.EntityNotFoundError as nfe:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(nfe)) from nfe
