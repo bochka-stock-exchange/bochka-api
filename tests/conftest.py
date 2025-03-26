@@ -5,10 +5,9 @@ from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 from uuid_v7.base import uuid7
 
+import src.models as models
 from src.db import get_db_manager
 from src.main import app
-from src.models.base import Base
-from src.models.user import User, UserRole
 
 pytest_plugins = ["pytest_asyncio"]
 
@@ -18,10 +17,10 @@ db_manager = get_db_manager()
 @pytest.fixture(scope="session")
 async def setup_db_schema() -> AsyncGenerator[None, None]:
     async with db_manager.engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+        await conn.run_sync(models.Base.metadata.create_all)
     yield
     async with db_manager.engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(models.Base.metadata.drop_all)
 
 
 @pytest.fixture(scope="function")
@@ -46,8 +45,10 @@ async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
 
 
 @pytest.fixture(scope="function")
-async def admin_user(db_session: AsyncSession) -> User:
-    admin = User(name="Admin User", role=UserRole.ADMIN, api_key="key-" + str(uuid7()))
+async def admin_user(db_session: AsyncSession) -> models.User:
+    admin = models.User(
+        name="Admin User", role=models.UserRole.ADMIN, api_key="key-" + str(uuid7())
+    )
     db_session.add(admin)
     await db_session.flush()
     return admin
