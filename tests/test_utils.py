@@ -1,6 +1,6 @@
 import pytest
 
-import src.utils as utils
+import src.core.utils as utils
 
 pytestmark = pytest.mark.asyncio(loop_scope="session")
 

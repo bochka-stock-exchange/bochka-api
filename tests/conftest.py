@@ -5,8 +5,9 @@ from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 from uuid_v7.base import uuid7
 
-import src.models as models
-from src.db import get_db_manager
+import src.app.models as models
+import src.core as core
+from src.core.db import get_db_manager
 from src.main import app
 
 pytest_plugins = ["pytest_asyncio"]
@@ -17,10 +18,10 @@ db_manager = get_db_manager()
 @pytest.fixture(scope="session")
 async def setup_db_schema() -> AsyncGenerator[None, None]:
     async with db_manager.engine.begin() as conn:
-        await conn.run_sync(models.Base.metadata.create_all)
+        await conn.run_sync(core.models.Base.metadata.create_all)
     yield
     async with db_manager.engine.begin() as conn:
-        await conn.run_sync(models.Base.metadata.drop_all)
+        await conn.run_sync(core.models.Base.metadata.drop_all)
 
 
 @pytest.fixture(scope="function")

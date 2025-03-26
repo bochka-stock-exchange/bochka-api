@@ -4,7 +4,7 @@ from httpx import AsyncClient
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.models import Instrument, User
+from src.app.models import Instrument, User
 
 pytestmark = pytest.mark.asyncio(loop_scope="session")
 
