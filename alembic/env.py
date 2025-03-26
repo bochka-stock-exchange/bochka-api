@@ -21,7 +21,7 @@ alembic_config = context.config
 settings = config.get_settings()
 
 section = alembic_config.config_ini_section
-alembic_config.set_section_option(section, "DATABASE_URL", str(settings.DATABASE_URL))
+alembic_config.set_section_option(section, "DATABASE_URL", settings.POSTGRES.URL)
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.

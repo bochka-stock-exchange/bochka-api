@@ -1,9 +1,53 @@
 from pathlib import Path
-
-from pydantic import PostgresDsn
+from pydantic import PostgresDsn, MongoDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
 import src.utils as utils
+
+
+class PostgreSQLSettings(BaseSettings):
+    POSTGRES_HOST: str = "localhost"
+    POSTGRES_USER: str = "postgres"
+    POSTGRES_PORT: int = 5432
+    POSTGRES_PASSWORD: str = "postgres"
+    POSTGRES_DB: str = "postgres"
+
+    @property
+    def DSN(self) -> PostgresDsn:
+        return PostgresDsn.build(
+            scheme="postgresql+asyncpg",
+            username=self.POSTGRES_USER,
+            password=self.POSTGRES_PASSWORD,
+            host=self.POSTGRES_HOST,
+            port=self.POSTGRES_PORT,
+            path=self.POSTGRES_DB,
+        )
+
+    @property
+    def URL(self) -> str:
+        return str(self.DSN)
+
+
+class MongoDBSettings(BaseSettings):
+    MONGO_HOST: str = "localhost"
+    MONGO_USER: str = "mongo"
+    MONGO_PORT: int = 27017
+    MONGO_PASSWORD: str = "mongo"
+    MONGO_DB: str = "admin"
+
+    @property
+    def DSN(self) -> MongoDsn:
+        return MongoDsn.build(
+            scheme="mongodb",
+            username=self.MONGO_USER,
+            password=self.MONGO_PASSWORD,
+            host=self.MONGO_HOST,
+            port=self.MONGO_PORT,
+            path=self.MONGO_DB,
+        )
+
+    @property
+    def URL(self) -> str:
+        return str(self.DSN)
 
 
 @utils.SingletonDecorator
@@ -22,30 +66,14 @@ class Settings(BaseSettings):
     ALLOW_ORIGINS: list[str] = ["*"]
     ALLOW_HOSTS: list[str] = ["*"]
 
-    POSTGRES_HOST: str = "localhost"
-    POSTGRES_USER: str = "postgres"
-    POSTGRES_PORT: int = 5432
-    POSTGRES_PASSWORD: str = "postgres"
-    POSTGRES_DB: str = "postgres"
+    POSTGRES: PostgreSQLSettings = PostgreSQLSettings()
+    # MONGO: MongoDBSettings = MongoDBSettings()
 
     API_PREFIX: str = "/api"
 
     TOKEN_PREFIX: str = "TOKEN"
     USER_ROLE: str = "USER"
     ADMIN_ROLE: str = "ADMIN"
-
-    MAX_IMAGE_SIZE: int = 1024 * 1024 * 10  # 10 MB
-
-    @property
-    def DATABASE_URL(self) -> PostgresDsn:
-        return PostgresDsn.build(
-            scheme="postgresql+asyncpg",
-            username=self.POSTGRES_USER,
-            password=self.POSTGRES_PASSWORD,
-            host=self.POSTGRES_HOST,
-            port=self.POSTGRES_PORT,
-            path=self.POSTGRES_DB,
-        )
 
     model_config = SettingsConfigDict(env_file=Path(__file__).parents[1] / ".env", extra="ignore")
 

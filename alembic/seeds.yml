@@ -3,19 +3,19 @@ users:
     id: "067d5d1f-22b5-72d6-ac87-18d26223bd52"
     name: "ADMIN"
     role: "ADMIN"
-    api_key: "API_KEY"
+    api_key: "key-API_KEY"
 
   - seed_id: "002_users"
     id: "067d5d1f-22b5-72d6-ac87-18d26223bd53"
     name: "USER"
     role: "USER"
-    api_key: "API_KEY_2"
+    api_key: "key-API_KEY_2"
 
   - seed_id: "003_users"
     id: "067d5d1f-22b5-72d6-ac87-18d26223bd54"
     name: "USER 2"
     role: "USER"
-    api_key: "API_KEY_3"
+    api_key: "key-API_KEY_3"
 
 instruments:
   - seed_id: "001_instruments"

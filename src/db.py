@@ -22,7 +22,7 @@ class DatabaseManager:
 
     def _create_engine(self) -> AsyncEngine:
         return create_async_engine(
-            str(self.settings.DATABASE_URL),
+            self.settings.POSTGRES.URL,
             echo=self.settings.DEBUG,
             poolclass=NullPool if self.settings.DEBUG else AsyncAdaptedQueuePool,
             pool_recycle=900 if not self.settings.DEBUG else -1,
