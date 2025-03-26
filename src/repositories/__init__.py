@@ -1,11 +1,11 @@
 from . import exceptions
-from .base import SQLAlchemyRepository
-from .instruments import InstrumentsRepository
-from .users import UsersRepository
+from .base import SQLAlchemyCRUD
+from .instruments import Instruments
+from .users import Users
 
 __all__ = [
     "exceptions",
-    "SQLAlchemyRepository",
-    "UsersRepository",
-    "InstrumentsRepository",
+    "SQLAlchemyCRUD",
+    "Users",
+    "Instruments",
 ]

@@ -10,7 +10,7 @@ from src.logger import repository_logger
 ModelType = TypeVar("ModelType", bound=models.Base)
 
 
-class SQLAlchemyRepository(Generic[ModelType]):
+class SQLAlchemyCRUD(Generic[ModelType]):
     def __init__(self, model: type[ModelType]):
         self.model = model
 

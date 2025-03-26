@@ -15,8 +15,8 @@ db_manager = get_db_manager()
 
 DBSession = Annotated[AsyncSession, Depends(db_manager.get_session)]
 
-UsersService = Annotated[services.UsersService, Depends()]
-InstrumentsService = Annotated[services.InstrumentsService, Depends()]
+UsersService = Annotated[services.Users, Depends()]
+InstrumentsService = Annotated[services.Instruments, Depends()]
 
 
 token_prefix = getattr(settings, "TOKEN_PREFIX", "TOKEN")

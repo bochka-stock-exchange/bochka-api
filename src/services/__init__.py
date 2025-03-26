@@ -1,11 +1,11 @@
 from . import exceptions
-from .base import BaseService
-from .instruments import InstrumentsService
-from .users import UsersService
+from .base import BaseCRUD
+from .instruments import Instruments
+from .users import Users
 
 __all__ = [
     "exceptions",
-    "BaseService",
-    "UsersService",
-    "InstrumentsService",
+    "BaseCRUD",
+    "Users",
+    "Instruments",
 ]

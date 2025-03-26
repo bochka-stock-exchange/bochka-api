@@ -12,10 +12,10 @@ TRead = TypeVar("TRead", bound=BaseModel)
 TUpdate = TypeVar("TUpdate", bound=BaseModel)
 
 
-class BaseService(Generic[TCreate, TRead, TUpdate]):
+class BaseCRUD(Generic[TCreate, TRead, TUpdate]):
     def __init__(
         self,
-        repo: repositories.SQLAlchemyRepository,
+        repo: repositories.SQLAlchemyCRUD,
         create_schema: type[TCreate],
         read_schema: type[TRead],
         update_schema: type[TUpdate],
@@ -41,8 +41,6 @@ class BaseService(Generic[TCreate, TRead, TUpdate]):
 
         return self.read_schema.model_validate(entity)
 
-    # способ изменить данные перед созданием без изменения Create схемы,
-    # например, для генерации каких-либо значений перед созданием
     def prepare_data(self, data: dict) -> dict:
         return data
 

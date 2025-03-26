@@ -7,7 +7,7 @@ import src.models as models
 import src.repositories as repositories
 
 
-class UsersRepository(repositories.SQLAlchemyRepository[models.User]):
+class Users(repositories.SQLAlchemyCRUD[models.User]):
     def __init__(self):
         super().__init__(models.User)
 

@@ -8,9 +8,9 @@ import src.schemas as schemas
 import src.services as services
 
 
-class UsersService(services.BaseService[schemas.UserCreate, schemas.UserRead, schemas.UserCreate]):
+class Users(services.BaseCRUD[schemas.UserCreate, schemas.UserRead, schemas.UserCreate]):
     def __init__(self):
-        self.repo = repositories.UsersRepository()
+        self.repo = repositories.Users()
         super().__init__(
             self.repo,
             create_schema=schemas.UserCreate,
