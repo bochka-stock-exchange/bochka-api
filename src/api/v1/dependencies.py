@@ -13,7 +13,7 @@ from src.schemas.user import UserRead
 settings = get_settings()
 db_manager = get_db_manager()
 
-Session = Annotated[AsyncSession, Depends(db_manager.get_session)]
+DBSession = Annotated[AsyncSession, Depends(db_manager.get_session)]
 
 UsersService = Annotated[services.UsersService, Depends()]
 InstrumentsService = Annotated[services.InstrumentsService, Depends()]
@@ -35,7 +35,7 @@ Token = Annotated[
 
 async def get_current_user(
     service: UsersService,
-    session: Session,
+    session: DBSession,
     token: Token,
 ) -> UserRead:
     if not token:

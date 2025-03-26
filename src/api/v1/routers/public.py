@@ -17,7 +17,7 @@ async def healthcheck():
 async def register(
     user_create: user_schemas.UserCreate,
     users_service: dependencies.UsersService,
-    session: dependencies.Session,
+    session: dependencies.DBSession,
 ):
     try:
         user = await users_service.create(session, user_create)
@@ -42,7 +42,7 @@ async def get_profile_admin(
 
 @router.get("/instrument", response_model=list[instrument_schemas.InstrumentRead])
 async def get_instruments(
-    instruments_service: dependencies.InstrumentsService, session: dependencies.Session
+    instruments_service: dependencies.InstrumentsService, session: dependencies.DBSession
 ):
     try:
         instruments = await instruments_service.read_all(session)

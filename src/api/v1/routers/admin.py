@@ -16,7 +16,7 @@ router = APIRouter(prefix="/admin", tags=["admin"])
 async def create_instrument(
     instrument: InstrumentCreate,
     instruments_service: dependencies.InstrumentsService,
-    session: dependencies.Session,
+    session: dependencies.DBSession,
 ):
     try:
         new_instrument = await instruments_service.create(session, instrument)
@@ -29,7 +29,7 @@ async def create_instrument(
 async def delete_instrument(
     ticker: str,
     instruments_service: dependencies.InstrumentsService,
-    session: dependencies.Session,
+    session: dependencies.DBSession,
 ):
     try:
         await instruments_service.delete_by_id(session, ticker)
