@@ -1,6 +1,8 @@
 from pathlib import Path
-from pydantic import PostgresDsn, MongoDsn
+
+from pydantic import MongoDsn, PostgresDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
 import src.utils as utils
 
 
