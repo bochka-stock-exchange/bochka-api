@@ -10,9 +10,9 @@ class Instruments(
     ],
 ):
     def __init__(self):
-        repo = repositories.Instruments()
+        self.repo = repositories.Instruments()
         super().__init__(
-            repo,
+            self.repo,
             create_schema=schemas.InstrumentCreate,
             read_schema=schemas.InstrumentRead,
             update_schema=schemas.InstrumentCreate,
