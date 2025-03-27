@@ -24,8 +24,8 @@ async def setup_db_schema() -> AsyncGenerator[None]:
         await conn.run_sync(core.models.Base.metadata.drop_all)
 
 
-@pytest.fixture
-async def db_session() -> AsyncGenerator[AsyncSession]:
+@pytest.fixture(scope="function")
+async def db_session(setup_db_schema) -> AsyncGenerator[AsyncSession]:  # noqa: ARG001
     async with db_manager.session_factory.begin() as session:
         try:
             yield session
@@ -33,7 +33,7 @@ async def db_session() -> AsyncGenerator[AsyncSession]:
             await session.rollback()
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient]:
     app.dependency_overrides[db_manager.get_session] = lambda: db_session
 
@@ -46,7 +46,7 @@ async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient]:
     app.dependency_overrides = {}
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 async def admin_user(db_session: AsyncSession) -> models.User:
     admin = models.User(
         name="Admin User",

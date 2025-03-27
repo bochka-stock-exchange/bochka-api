@@ -110,7 +110,15 @@ select = [
     "RUF",
     "TRY"
 ]
-ignore = ["C408", "S101", "COM812", "N802", "TRY300", "S105"]
+ignore = [
+    "C408",
+    "S101",
+    "COM812",
+    "N802",
+    "TRY300",
+    "S105",
+    "PT003"
+]
 
 # Allow fix for all enabled rules (when `--fix`) is provided.
 fixable = ["ALL"]
@@ -155,7 +163,7 @@ pythonpath = [
     ".", "tests"
 ]
 asyncio_mode = "auto"
-asyncio_default_fixture_loop_scope = "function"
+asyncio_default_fixture_loop_scope = "session"
 
 [tool.pyright]
 venvPath = "."

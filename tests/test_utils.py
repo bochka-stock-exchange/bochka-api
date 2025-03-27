@@ -1,8 +1,4 @@
-import pytest
-
 from src.core import utils
-
-pytestmark = pytest.mark.asyncio(loop_scope="session")
 
 
 def test_singleton():
