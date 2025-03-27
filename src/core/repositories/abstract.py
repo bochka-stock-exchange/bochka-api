@@ -1,13 +1,13 @@
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
-from typing import Generic, TypeVar
+from typing import TypeVar
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 ModelType = TypeVar("ModelType")
 
 
-class Abstract(ABC, Generic[ModelType]):
+class Abstract[ModelType](ABC):
     @abstractmethod
     async def create(self, session: AsyncSession, data: dict) -> ModelType:
         raise NotImplementedError

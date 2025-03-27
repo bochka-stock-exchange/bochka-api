@@ -1,4 +1,4 @@
-from typing import Generic, TypeVar
+from typing import TypeVar, cast
 
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -6,12 +6,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src import core
 from src.core.logger import service_logger
 
+T = TypeVar("T", bound=BaseModel)
 TCreate = TypeVar("TCreate", bound=BaseModel)
 TRead = TypeVar("TRead", bound=BaseModel)
 TUpdate = TypeVar("TUpdate", bound=BaseModel)
 
 
-class BaseCRUD(Generic[TCreate, TRead, TUpdate]):
+class BaseCRUD[TCreate: BaseModel, TRead: BaseModel, TUpdate: BaseModel]:
     def __init__(
         self,
         repo: core.repositories.sqlalchemy.BaseCRUD,
@@ -38,7 +39,7 @@ class BaseCRUD(Generic[TCreate, TRead, TUpdate]):
 
         service_logger.info(f"Successfully created {self.create_schema.__name__}.")
 
-        return self.read_schema.model_validate(entity)
+        return cast(TRead, self.read_schema.model_validate(entity))
 
     @staticmethod
     def prepare_data(data: dict) -> dict:
@@ -61,7 +62,7 @@ class BaseCRUD(Generic[TCreate, TRead, TUpdate]):
             raise core.services.exceptions.EntityCreateError(self.__class__.__name__, str(e)) from e
 
         validated_entities: list[TRead] = [
-            self.read_schema.model_validate(entity) for entity in entities
+            cast(TRead, self.read_schema.model_validate(entity)) for entity in entities
         ]
 
         service_logger.info(f"Successfully created {len(entities)} entities.")
@@ -89,7 +90,7 @@ class BaseCRUD(Generic[TCreate, TRead, TUpdate]):
         service_logger.info(
             f"Successfully fetched {self.update_schema.__name__} with ID {entity_id}",
         )
-        return self.read_schema.model_validate(entity)
+        return cast(TRead, self.read_schema.model_validate(entity))
 
     async def read_all(self, session: AsyncSession, page: int = 1, limit: int = 10) -> list[TRead]:
         service_logger.info(
@@ -103,7 +104,7 @@ class BaseCRUD(Generic[TCreate, TRead, TUpdate]):
             service_logger.error(f"Error reading all entities: {e!s}")
             raise core.services.exceptions.EntityReadError(self.__class__.__name__, str(e)) from e
 
-        validated_entities = [self.read_schema.model_validate(e) for e in entities]
+        validated_entities = [cast(TRead, self.read_schema.model_validate(e)) for e in entities]
 
         service_logger.info(f"Successfully fetched {len(entities)} entities.")
         return validated_entities
@@ -135,7 +136,7 @@ class BaseCRUD(Generic[TCreate, TRead, TUpdate]):
         service_logger.info(
             f"Successfully updated {self.update_schema.__name__} with ID {entity_id}.",
         )
-        return self.read_schema.model_validate(updated_entity)
+        return cast(TRead, self.read_schema.model_validate(updated_entity))
 
     async def delete_by_id(self, session: AsyncSession, entity_id: int | str) -> bool:
         service_logger.info(f"Deleting {self.read_schema.__name__} with ID: {entity_id}")
