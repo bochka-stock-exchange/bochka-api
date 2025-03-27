@@ -4,12 +4,12 @@ from fastapi import Depends, HTTPException, Security, status
 from fastapi.security import APIKeyHeader
 from sqlalchemy.ext.asyncio import AsyncSession
 
-import src.core.config as alembic_config
+from src import core
 from src.app import schemas, services
 from src.app.models import UserRole
 from src.core.db import get_db_manager
 
-settings = alembic_config.get_settings()
+settings = core.config.get_settings()
 db_manager = get_db_manager()
 
 DBSession = Annotated[AsyncSession, Depends(db_manager.get_session)]

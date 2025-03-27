@@ -5,14 +5,13 @@ from sqlalchemy import UUID, Enum, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from uuid_v7.base import uuid7
 
-import src.core.config as alembic_config
 from src import core
 
 if TYPE_CHECKING:
     from src.app.models.balance import Balance, BalanceOperation
     from src.app.models.order import Order
 
-settings = alembic_config.get_settings()
+settings = core.config.get_settings()
 
 
 class UserRole(enum.StrEnum):
