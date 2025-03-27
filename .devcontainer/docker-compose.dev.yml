@@ -1,4 +1,16 @@
 services:
+  devcontainer:
+    container_name: devcontainer
+    image: mcr.microsoft.com/devcontainers/python:1-3.13-bullseye
+    volumes:
+      - ..:/workspaces:cached
+      - ~/.ssh:/home/vscode/.ssh:ro
+    command: sleep infinity
+    ports:
+      - "8000:8000"
+    environment:
+      UV_LINK_MODE: copy
+
   db:
     container_name: db
     image: postgres:17-alpine
