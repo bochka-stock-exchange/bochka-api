@@ -1,7 +1,7 @@
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-import src.core as core
+from src import core
 from src.app.models.balance import Balance, BalanceOperation
 from src.app.models.order import Order, Transaction
 
@@ -15,9 +15,11 @@ class Instrument(core.models.Base):
 
     balances: Mapped[list["Balance"]] = relationship("Balance", back_populates="instrument")
     balance_operations: Mapped[list["BalanceOperation"]] = relationship(
-        "BalanceOperation", back_populates="instrument"
+        "BalanceOperation",
+        back_populates="instrument",
     )
     orders: Mapped[list["Order"]] = relationship("Order", back_populates="instrument")
     transactions: Mapped[list["Transaction"]] = relationship(
-        "Transaction", back_populates="instrument"
+        "Transaction",
+        back_populates="instrument",
     )

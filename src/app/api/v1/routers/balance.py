@@ -5,14 +5,14 @@ router = APIRouter(prefix="/balance", tags=["balance"])
 
 @router.get("/")
 async def get_balance():
-    raise NotImplementedError()
+    raise NotImplementedError
 
 
 @router.post("/deposit")
 async def deposit():
-    raise NotImplementedError()
+    raise NotImplementedError
 
 
 @router.post("/deposit")
 async def withdraw():
-    raise NotImplementedError()
+    raise NotImplementedError

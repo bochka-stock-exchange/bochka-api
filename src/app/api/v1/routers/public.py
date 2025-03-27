@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException, status
 
-import src.app.api.v1.dependencies as dependencies
-import src.app.schemas as schemas
-import src.core as core
+from src import core
+from src.app import schemas
+from src.app.api.v1 import dependencies
 
 router = APIRouter(prefix="/public", tags=["public"])
 
@@ -19,8 +19,7 @@ async def register(
     session: dependencies.DBSession,
 ):
     try:
-        user = await users_service.create(session, user_create)
-        return user
+        return await users_service.create(session, user_create)
     except core.services.exceptions.EntityCreateError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
 
@@ -41,20 +40,20 @@ async def get_profile_admin(
 
 @router.get("/instrument", response_model=list[schemas.InstrumentRead])
 async def get_instruments(
-    instruments_service: dependencies.InstrumentsService, session: dependencies.DBSession
+    instruments_service: dependencies.InstrumentsService,
+    session: dependencies.DBSession,
 ):
     try:
-        instruments = await instruments_service.read_all(session)
-        return instruments
+        return await instruments_service.read_all(session)
     except core.services.exceptions.EntityReadError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
 
 
 @router.get("/orderbook/{ticker}")
 async def get_orderbook(ticker: str):
-    raise NotImplementedError()
+    raise NotImplementedError
 
 
 @router.get("/transactions/{ticker}")
 async def get_transactions(ticker: str):
-    raise NotImplementedError()
+    raise NotImplementedError

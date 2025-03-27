@@ -1,16 +1,15 @@
-from typing import Optional, Sequence, TypeVar, Union
+from collections.abc import Sequence
+from typing import TypeVar
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-import src.core.logger as logger
-import src.core.models as models
-import src.core.repositories as repositories
+from src.core import logger, models, repositories
 
 ModelType = TypeVar("ModelType", bound=models.Base)
 
 
-class BaseCRUD(repositories.abc.Abstract[ModelType]):
+class BaseCRUD(repositories.abstract.Abstract[ModelType]):
     def __init__(self, model: type[ModelType]):
         self.model = model
 
@@ -28,7 +27,9 @@ class BaseCRUD(repositories.abc.Abstract[ModelType]):
                 exc_info=True,
             )
             raise repositories.exceptions.EntityCreateError(
-                self.__class__.__name__, self.model.__tablename__, str(e)
+                self.__class__.__name__,
+                self.model.__tablename__,
+                str(e),
             ) from e
 
         logger.repository_logger.info(f"Successfully created {self.model.__name__}: {instance}")
@@ -49,17 +50,21 @@ class BaseCRUD(repositories.abc.Abstract[ModelType]):
                 exc_info=True,
             )
             raise repositories.exceptions.EntityCreateError(
-                self.__class__.__name__, self.model.__tablename__, str(e)
+                self.__class__.__name__,
+                self.model.__tablename__,
+                str(e),
             ) from e
 
         logger.repository_logger.info(
-            f"Successfully created multiple {self.model.__name__} entities"
+            f"Successfully created multiple {self.model.__name__} entities",
         )
         return instances
 
     async def read_by_id(
-        self, session: AsyncSession, entity_id: Union[int, str]
-    ) -> Optional[ModelType]:
+        self,
+        session: AsyncSession,
+        entity_id: int | str,
+    ) -> ModelType | None:
         logger.repository_logger.info(f"Fetching {self.model.__name__} by ID: {entity_id}")
 
         try:
@@ -84,15 +89,18 @@ class BaseCRUD(repositories.abc.Abstract[ModelType]):
         return entity
 
     async def read_all(
-        self, session: AsyncSession, page: int = 1, limit: int = 10
+        self,
+        session: AsyncSession,
+        page: int = 1,
+        limit: int = 10,
     ) -> Sequence[ModelType]:
         logger.repository_logger.info(
-            f"Fetching all {self.model.__name__} entities. Page: {page}, Limit: {limit}"
+            f"Fetching all {self.model.__name__} entities. Page: {page}, Limit: {limit}",
         )
 
         try:
             result = await session.scalars(
-                select(self.model).offset((page - 1) * limit).limit(limit)
+                select(self.model).offset((page - 1) * limit).limit(limit),
             )
             entities = result.all()
         except Exception as e:
@@ -101,17 +109,23 @@ class BaseCRUD(repositories.abc.Abstract[ModelType]):
                 exc_info=True,
             )
             raise repositories.exceptions.EntityReadError(
-                self.__class__.__name__, self.model.__tablename__, "", str(e)
+                self.__class__.__name__,
+                self.model.__tablename__,
+                "",
+                str(e),
             ) from e
 
         logger.repository_logger.info(f"Fetched {len(entities)} {self.model.__name__} entities")
         return entities
 
     async def update_by_id(
-        self, session: AsyncSession, entity_id: Union[int, str], data: dict
-    ) -> Optional[ModelType]:
+        self,
+        session: AsyncSession,
+        entity_id: int | str,
+        data: dict,
+    ) -> ModelType | None:
         logger.repository_logger.info(
-            f"Updating {self.model.__name__} with ID: {entity_id}, Data: {data}"
+            f"Updating {self.model.__name__} with ID: {entity_id}, Data: {data}",
         )
 
         try:
@@ -135,15 +149,15 @@ class BaseCRUD(repositories.abc.Abstract[ModelType]):
 
         if instance:
             logger.repository_logger.info(
-                f"Successfully updated {self.model.__name__} with ID: {entity_id}"
+                f"Successfully updated {self.model.__name__} with ID: {entity_id}",
             )
         else:
             logger.repository_logger.warning(
-                f"No {self.model.__name__} updated for ID: {entity_id}"
+                f"No {self.model.__name__} updated for ID: {entity_id}",
             )
         return instance
 
-    async def delete_by_id(self, session: AsyncSession, entity_id: Union[int, str]) -> bool:
+    async def delete_by_id(self, session: AsyncSession, entity_id: int | str) -> bool:
         logger.repository_logger.info(f"Deleting {self.model.__name__} with ID: {entity_id}")
 
         try:

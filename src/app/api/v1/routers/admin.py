@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
-import src.app.api.v1.dependencies as dependencies
-import src.app.schemas as schemas
-import src.core as core
+from src import core
+from src.app import schemas
+from src.app.api.v1 import dependencies
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -19,8 +19,7 @@ async def create_instrument(
     session: dependencies.DBSession,
 ):
     try:
-        new_instrument = await instruments_service.create(session, instrument)
-        return new_instrument
+        return await instruments_service.create(session, instrument)
     except core.services.exceptions.EntityCreateError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
 

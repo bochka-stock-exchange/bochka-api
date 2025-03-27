@@ -2,8 +2,7 @@ from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-import src.core.settings as settings
-import src.core.utils as utils
+from src.core import settings, utils
 
 
 @utils.Singleton

@@ -10,7 +10,9 @@ pytestmark = pytest.mark.asyncio(loop_scope="session")
 
 
 async def test_create_instrument_success(
-    db_session: AsyncSession, client: AsyncClient, admin_user: User
+    db_session: AsyncSession,
+    client: AsyncClient,
+    admin_user: User,
 ):
     instrument_data = {"ticker": "USD", "name": "Доллар США"}
     headers = {"Authorization": f"TOKEN {admin_user.api_key}"}
@@ -25,6 +27,8 @@ async def test_create_instrument_success(
 
     result = await db_session.scalars(select(Instrument))
 
-    assert len(res := (result.all())) == 1
-    assert isinstance(instr := res[0], Instrument)
+    res = result.all()
+    assert len(res) == 1
+    instr = res[0]
+    assert isinstance(instr, Instrument)
     assert instr.ticker == "USD"

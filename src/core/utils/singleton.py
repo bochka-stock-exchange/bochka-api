@@ -5,14 +5,18 @@ T = TypeVar("T")
 
 
 def Singleton(cls: type[T]) -> type:
-    """
-    A thread-safe singleton decorator
+    """A thread-safe singleton decorator.
+
     Respects the original class's __new__ and __init__ methods
+
+    Returns:
+        Singleton
+
     """
     instance = None
     lock = threading.Lock()
 
-    def __new__(cls_new, *args, **kwargs) -> T:
+    def __new__(cls_new, *args, **kwargs) -> T:  # noqa: N807
         nonlocal instance, lock
         if instance is None:
             with lock:
@@ -21,15 +25,14 @@ def Singleton(cls: type[T]) -> type:
                     super(cls_new, instance).__init__(*args, **kwargs)
         return instance
 
-    def __init__(self, *args, **kwargs):
-        """
-        Prevents re-initialization after first creation
+    def __init__(self, *args, **kwargs):  # noqa: N807
+        """Prevents re-initialization after first creation.
+
         __new__ always returns the same instance,
         but __init__ would normally be called repeatedly with different arguments
         By overriding __init__ we ensure that initialization happens only once inside __new__
 
         Example:
-
         @Singleton
         class Settings:
             def __init__(self, value):
@@ -39,10 +42,10 @@ def Singleton(cls: type[T]) -> type:
         s2 = Settings("second")
         print(s1 is s2)  # True
         print(s2.value)  # "first"
-        """
-        pass
 
-    new_class = type(
+        """
+
+    return type(
         cls.__name__,
         (cls,),
         {
@@ -50,5 +53,3 @@ def Singleton(cls: type[T]) -> type:
             "__init__": __init__,
         },
     )
-
-    return new_class

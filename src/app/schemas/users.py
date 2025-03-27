@@ -3,7 +3,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
-import src.app.models as models
+from src.app import models
 
 
 class UserBase(BaseModel):

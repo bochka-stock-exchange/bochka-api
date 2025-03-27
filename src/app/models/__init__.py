@@ -6,9 +6,9 @@ from src.app.models.user import User, UserRole
 __all__ = [
     "Balance",
     "BalanceOperation",
+    "Instrument",
     "Order",
     "Transaction",
-    "Instrument",
     "User",
     "UserRole",
 ]

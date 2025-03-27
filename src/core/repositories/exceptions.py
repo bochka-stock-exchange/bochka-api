@@ -1,6 +1,3 @@
-from typing import Union
-
-
 class RepositoryError(Exception):
     """Base exception class for repository errors."""
 
@@ -19,12 +16,12 @@ class EntityReadError(RepositoryError):
         self,
         repo_name: str,
         table_name: str,
-        read_param: Union[int, str],
+        read_param: int | str,
         reason: str,
     ):
         super().__init__(
             f"{repo_name} failed to read entity from {table_name} "
-            f"with reading parameters: {read_param}. Reason: {reason}"
+            f"with reading parameters: {read_param}. Reason: {reason}",
         )
 
 
@@ -35,12 +32,12 @@ class EntityUpdateError(RepositoryError):
         self,
         repo_name: str,
         table_name: str,
-        read_param: Union[int, str],
+        read_param: int | str,
         reason: str,
     ):
         super().__init__(
             f"{repo_name} failed to update entity in {table_name} "
-            f"with reading parameters: {read_param}. Reason: {reason}"
+            f"with reading parameters: {read_param}. Reason: {reason}",
         )
 
 
@@ -51,10 +48,10 @@ class EntityDeleteError(RepositoryError):
         self,
         repo_name: str,
         table_name: str,
-        read_param: Union[int, str],
+        read_param: int | str,
         reason: str,
     ):
         super().__init__(
             f"{repo_name} failed to delete entity in {table_name} "
-            f"with reading parameters: {read_param}. Reason: {reason}"
+            f"with reading parameters: {read_param}. Reason: {reason}",
         )

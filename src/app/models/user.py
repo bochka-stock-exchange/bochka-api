@@ -5,8 +5,8 @@ from sqlalchemy import UUID, Enum, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from uuid_v7.base import uuid7
 
-import src.core as core
 import src.core.config as alembic_config
+from src import core
 
 if TYPE_CHECKING:
     from src.app.models.balance import Balance, BalanceOperation
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 settings = alembic_config.get_settings()
 
 
-class UserRole(str, enum.Enum):
+class UserRole(enum.StrEnum):
     USER = getattr(settings, "USER_ROLE", "USER")
     ADMIN = getattr(settings, "ADMIN_ROLE", "ADMIN")
 
@@ -32,5 +32,6 @@ class User(core.models.Base):
     balances: Mapped[list["Balance"]] = relationship("Balance", back_populates="user")
     orders: Mapped[list["Order"]] = relationship("Order", back_populates="user")
     operations: Mapped[list["BalanceOperation"]] = relationship(
-        "BalanceOperation", back_populates="user"
+        "BalanceOperation",
+        back_populates="user",
     )

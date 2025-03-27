@@ -1,5 +1,5 @@
-import src.app.models as models
-import src.core as core
+from src import core
+from src.app import models
 
 
 class Instruments(core.repositories.sqlalchemy.BaseCRUD[models.Instrument]):

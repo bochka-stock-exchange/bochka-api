@@ -1,12 +1,11 @@
-from typing import Annotated, Optional
+from typing import Annotated
 
 from fastapi import Depends, HTTPException, Security, status
 from fastapi.security import APIKeyHeader
 from sqlalchemy.ext.asyncio import AsyncSession
 
-import src.app.schemas as schemas
-import src.app.services as services
 import src.core.config as alembic_config
+from src.app import schemas, services
 from src.app.models import UserRole
 from src.core.db import get_db_manager
 
@@ -28,7 +27,7 @@ authorization_header = APIKeyHeader(
 )
 
 Token = Annotated[
-    Optional[str],
+    str | None,
     Security(authorization_header),
 ]
 
@@ -55,7 +54,7 @@ async def get_current_user(
 CurrentUser = Annotated[schemas.UserRead, Depends(get_current_user)]
 
 
-async def get_admin_user(
+def get_admin_user(
     current_user: CurrentUser,
 ) -> schemas.UserRead:
     if current_user.role != UserRole.ADMIN:

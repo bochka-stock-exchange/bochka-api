@@ -1,11 +1,11 @@
 import pytest
 
-import src.core.utils as utils
+from src.core import utils
 
 pytestmark = pytest.mark.asyncio(loop_scope="session")
 
 
-async def test_singleton():
+def test_singleton():
     @utils.Singleton
     class Decorated:
         def __init__(self, value):

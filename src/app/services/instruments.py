@@ -1,12 +1,13 @@
-import src.app.repositories as repositories
-import src.app.schemas as schemas
-import src.core as core
+from src import core
+from src.app import repositories, schemas
 
 
 class Instruments(
     core.services.BaseCRUD[
-        schemas.InstrumentCreate, schemas.InstrumentRead, schemas.InstrumentCreate
-    ]
+        schemas.InstrumentCreate,
+        schemas.InstrumentRead,
+        schemas.InstrumentCreate,
+    ],
 ):
     def __init__(self):
         repo = repositories.Instruments()

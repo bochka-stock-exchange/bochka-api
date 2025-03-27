@@ -1,9 +1,9 @@
-from typing import Generic, Optional, TypeVar, Union
+from typing import Generic, TypeVar
 
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
-import src.core as core
+from src import core
 from src.core.logger import service_logger
 
 TCreate = TypeVar("TCreate", bound=BaseModel)
@@ -33,18 +33,21 @@ class BaseCRUD(Generic[TCreate, TRead, TUpdate]):
             entity = await self.repo.create(session, data)
 
         except core.repositories.exceptions.EntityCreateError as e:
-            service_logger.error(f"Error creating {self.create_schema.__name__}: {str(e)}")
+            service_logger.error(f"Error creating {self.create_schema.__name__}: {e!s}")
             raise core.services.exceptions.EntityCreateError(self.__class__.__name__, str(e)) from e
 
         service_logger.info(f"Successfully created {self.create_schema.__name__}.")
 
         return self.read_schema.model_validate(entity)
 
-    def prepare_data(self, data: dict) -> dict:
+    @staticmethod
+    def prepare_data(data: dict) -> dict:
         return data
 
     async def create_many(
-        self, session: AsyncSession, create_schemas: list[TCreate]
+        self,
+        session: AsyncSession,
+        create_schemas: list[TCreate],
     ) -> list[TRead]:
         service_logger.info(f"Creating multiple {self.create_schema.__name__} entities.")
 
@@ -54,7 +57,7 @@ class BaseCRUD(Generic[TCreate, TRead, TUpdate]):
             entities = await self.repo.create_many(session, data)
 
         except core.repositories.exceptions.EntityCreateError as e:
-            service_logger.error(f"Error creating entities: {str(e)}")
+            service_logger.error(f"Error creating entities: {e!s}")
             raise core.services.exceptions.EntityCreateError(self.__class__.__name__, str(e)) from e
 
         validated_entities: list[TRead] = [
@@ -64,7 +67,7 @@ class BaseCRUD(Generic[TCreate, TRead, TUpdate]):
         service_logger.info(f"Successfully created {len(entities)} entities.")
         return validated_entities
 
-    async def read_by_id(self, session: AsyncSession, entity_id: Union[int, str]) -> TRead:
+    async def read_by_id(self, session: AsyncSession, entity_id: int | str) -> TRead:
         service_logger.info(f"Reading {self.read_schema.__name__} with ID: {entity_id}")
 
         try:
@@ -72,31 +75,32 @@ class BaseCRUD(Generic[TCreate, TRead, TUpdate]):
 
         except core.repositories.exceptions.EntityReadError as e:
             service_logger.error(
-                f"Error reading {self.read_schema.__name__} with ID {entity_id}: {str(e)}"
+                f"Error reading {self.read_schema.__name__} with ID {entity_id}: {e!s}",
             )
             raise core.services.exceptions.EntityReadError(self.__class__.__name__, str(e)) from e
 
         if not entity:
             service_logger.error(f"Entity with ID {entity_id} not found.")
             raise core.services.exceptions.EntityNotFoundError(
-                self.__class__.__name__, f"entity_id: {entity_id}"
+                self.__class__.__name__,
+                f"entity_id: {entity_id}",
             )
 
         service_logger.info(
-            f"Successfully fetched {self.update_schema.__name__} with ID {entity_id}"
+            f"Successfully fetched {self.update_schema.__name__} with ID {entity_id}",
         )
         return self.read_schema.model_validate(entity)
 
     async def read_all(self, session: AsyncSession, page: int = 1, limit: int = 10) -> list[TRead]:
         service_logger.info(
-            f"Reading all {self.read_schema.__name__} entities (Page: {page}, Limit: {limit})"
+            f"Reading all {self.read_schema.__name__} entities (Page: {page}, Limit: {limit})",
         )
 
         try:
             entities = await self.repo.read_all(session, page, limit)
 
         except core.repositories.exceptions.EntityReadError as e:
-            service_logger.error(f"Error reading all entities: {str(e)}")
+            service_logger.error(f"Error reading all entities: {e!s}")
             raise core.services.exceptions.EntityReadError(self.__class__.__name__, str(e)) from e
 
         validated_entities = [self.read_schema.model_validate(e) for e in entities]
@@ -107,9 +111,9 @@ class BaseCRUD(Generic[TCreate, TRead, TUpdate]):
     async def update_by_id(
         self,
         session: AsyncSession,
-        entity_id: Union[int, str],
+        entity_id: int | str,
         update_schema: TUpdate,
-    ) -> Optional[TRead]:
+    ) -> TRead | None:
         service_logger.info(f"Updating {self.update_schema.__name__} with ID: {entity_id}")
 
         data = update_schema.model_dump(exclude_unset=True)
@@ -120,32 +124,34 @@ class BaseCRUD(Generic[TCreate, TRead, TUpdate]):
             if not updated_entity:
                 service_logger.error(f"Entity with ID {entity_id} not found for update.")
                 raise core.services.exceptions.EntityNotFoundError(
-                    self.__class__.__name__, f"entity_id: {entity_id}"
+                    self.__class__.__name__,
+                    f"entity_id: {entity_id}",
                 )
 
         except core.repositories.exceptions.EntityUpdateError as e:
-            service_logger.error(f"Error updating entity with ID {entity_id}: {str(e)}")
+            service_logger.error(f"Error updating entity with ID {entity_id}: {e!s}")
             raise core.services.exceptions.EntityUpdateError(self.__class__.__name__, str(e)) from e
 
         service_logger.info(
-            f"Successfully updated {self.update_schema.__name__} with ID {entity_id}."
+            f"Successfully updated {self.update_schema.__name__} with ID {entity_id}.",
         )
         return self.read_schema.model_validate(updated_entity)
 
-    async def delete_by_id(self, session: AsyncSession, entity_id: Union[int, str]) -> bool:
+    async def delete_by_id(self, session: AsyncSession, entity_id: int | str) -> bool:
         service_logger.info(f"Deleting {self.read_schema.__name__} with ID: {entity_id}")
 
         try:
             is_deleted = await self.repo.delete_by_id(session, entity_id)
 
         except core.repositories.exceptions.EntityDeleteError as e:
-            service_logger.error(f"Error deleting entity with ID {entity_id}: {str(e)}")
+            service_logger.error(f"Error deleting entity with ID {entity_id}: {e!s}")
             raise core.services.exceptions.EntityDeleteError(self.__class__.__name__, str(e)) from e
 
         if not is_deleted:
             service_logger.error(f"Entity with ID {entity_id} not found for deletion.")
             raise core.services.exceptions.EntityNotFoundError(
-                self.__class__.__name__, f"entity_id: {entity_id}"
+                self.__class__.__name__,
+                f"entity_id: {entity_id}",
             )
 
         service_logger.info(f"Successfully deleted entity with ID {entity_id}.")

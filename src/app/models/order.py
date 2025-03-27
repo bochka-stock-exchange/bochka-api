@@ -5,26 +5,26 @@ from sqlalchemy import UUID, Enum, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from uuid_v7.base import uuid7
 
-import src.core as core
+from src import core
 
 if TYPE_CHECKING:
     from src.app.models.instrument import Instrument
     from src.app.models.user import User
 
 
-class OrderType(str, enum.Enum):
+class OrderType(enum.StrEnum):
     LIMIT = "LIMIT"
     MARKET = "MARKET"
 
 
-class OrderStatus(str, enum.Enum):
+class OrderStatus(enum.StrEnum):
     NEW = "NEW"
     EXECUTED = "EXECUTED"
     PARTIALLY_EXECUTED = "PARTIALLY_EXECUTED"
     CANCELLED = "CANCELLED"
 
 
-class Direction(str, enum.Enum):
+class Direction(enum.StrEnum):
     BUY = "BUY"
     SELL = "SELL"
 
@@ -35,14 +35,20 @@ class Order(core.models.Base):
 
     id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid7)
     user_id: Mapped[UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("users.id"), nullable=False
+        UUID(as_uuid=True),
+        ForeignKey("users.id"),
+        nullable=False,
     )
     status: Mapped[OrderStatus] = mapped_column(
-        Enum(OrderStatus), default=OrderStatus.NEW, nullable=False
+        Enum(OrderStatus),
+        default=OrderStatus.NEW,
+        nullable=False,
     )
     direction: Mapped[Direction] = mapped_column(Enum(Direction), nullable=False)
     ticker: Mapped[str] = mapped_column(
-        String(10), ForeignKey("instruments.ticker"), nullable=False
+        String(10),
+        ForeignKey("instruments.ticker"),
+        nullable=False,
     )
     qty: Mapped[int] = mapped_column(Integer, nullable=False)
     price: Mapped[int] = mapped_column(Integer)
@@ -59,7 +65,9 @@ class Transaction(core.models.Base):
 
     id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
     ticker: Mapped[str] = mapped_column(
-        String(10), ForeignKey("instruments.ticker"), nullable=False
+        String(10),
+        ForeignKey("instruments.ticker"),
+        nullable=False,
     )
     amount: Mapped[int] = mapped_column(Integer, nullable=False)
     price: Mapped[int] = mapped_column(Integer, nullable=False)
