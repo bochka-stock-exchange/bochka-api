@@ -1,7 +1,7 @@
-from src.app.models.balance import Balance, BalanceOperation
-from src.app.models.instrument import Instrument
-from src.app.models.order import Order, Transaction
-from src.app.models.user import User, UserRole
+from .balance import Balance, BalanceOperation
+from .instrument import Instrument
+from .order import Order, Transaction
+from .user import User, UserRole
 
 __all__ = [
     "Balance",
