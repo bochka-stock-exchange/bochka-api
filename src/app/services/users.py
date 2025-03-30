@@ -27,7 +27,12 @@ class Users(core.services.BaseCRUD[schemas.UserCreate, schemas.UserRead, schemas
     ) -> schemas.UserRead | None:
         try:
             user_data = await self.repo.get_by_api_key(session, api_key)
-        except core.repositories.exceptions.EntityReadError as e:
+        except Exception as e:
             raise core.services.exceptions.EntityReadError(self.__class__.__name__, str(e)) from e
+
+        if not user_data:
+            raise core.services.exceptions.PermissionDeniedError(
+                self.__class__.__name__, f"Invalid Credentials."
+            )
 
         return self.read_schema.model_validate(user_data)

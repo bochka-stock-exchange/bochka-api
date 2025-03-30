@@ -29,7 +29,7 @@ class Settings(BaseSettings):
     USER_ROLE: str = "USER"
     ADMIN_ROLE: str = "ADMIN"
 
-    model_config = SettingsConfigDict(env_file=Path(__file__).parents[1] / ".env", extra="ignore")
+    model_config = SettingsConfigDict(env_file=Path(__file__).parents[2] / ".env", extra="ignore")
 
 
 def get_settings():
