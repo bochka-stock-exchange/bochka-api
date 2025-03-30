@@ -11,6 +11,9 @@ class Settings(BaseSettings):
     APP_DESCRIPTION: str = "API for Bochka stock exchange"
     APP_VERSION: str = "0.1.0"
 
+    DOCS_URL: str | None = "/docs"
+    REDOC_URL: str | None = "/redoc"
+
     DEBUG: bool = False
 
     CSRF_COOKIE_NAME: str = "csrftoken"
