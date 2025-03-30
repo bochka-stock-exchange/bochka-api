@@ -3,6 +3,7 @@ from fastapi.responses import ORJSONResponse
 
 from src.core import repositories
 
+
 def register_error_handlers(app: FastAPI) -> None:
     @app.exception_handler(repositories.exceptions.EntityCreateError)
     def handle_entity_create_error(
