@@ -122,7 +122,7 @@ class BaseCRUD[TCreate: BaseModel, TRead: BaseModel, TUpdate: BaseModel]:
 
             if not updated_entity:
                 logger.service_logger.error(f"Entity with ID {entity_id} not found for update.")
-                raise services.exceptions.EntityNotFoundError(
+                raise services.exceptions.EntityNotFoundError(  # noqa: TRY301
                     self.__class__.__name__,
                     f"entity_id: {entity_id}",
                 )

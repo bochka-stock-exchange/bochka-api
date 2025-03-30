@@ -40,7 +40,7 @@ def register_error_handlers(app: FastAPI) -> None:
         request: Request, exc: repositories.exceptions.EntityUpdateError
     ) -> ORJSONResponse:
         return ORJSONResponse(
-            status_code=status.HTTP_409_CONFLICT,  # Более подходящий код для конфликтов при обновлении
+            status_code=status.HTTP_409_CONFLICT,
             content={
                 "message": str(exc)
                 if settings.DEBUG
