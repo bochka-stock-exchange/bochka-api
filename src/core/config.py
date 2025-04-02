@@ -1,7 +1,6 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from src.core import settings, utils
-from src.core.settings import env_config
 
 
 @utils.Singleton
@@ -16,7 +15,7 @@ class Settings(BaseSettings):
     DEBUG: bool = False
 
     CSRF_COOKIE_NAME: str = "csrftoken"
-    CSRF_EXPIRE_TIME: int = 86400 * 7  # 7 дней
+    CSRF_EXPIRE_TIME: int = 86400 * 7
 
     DOMAIN: str = "example.site"
 
@@ -31,7 +30,7 @@ class Settings(BaseSettings):
     USER_ROLE: str = "USER"
     ADMIN_ROLE: str = "ADMIN"
 
-    model_config = SettingsConfigDict(env_file=env_config.ENV_FILE_PATH, extra="ignore")
+    model_config = SettingsConfigDict(env_file=settings.env_config.ENV_FILE_PATH, extra="ignore")
 
 
 def get_settings():

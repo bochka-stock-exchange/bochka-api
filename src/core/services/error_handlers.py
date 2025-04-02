@@ -79,6 +79,18 @@ def register_error_handlers(app: FastAPI) -> None:
             },
         )
 
+    @app.exception_handler(services.exceptions.AuthenticationError)
+    def handle_authentication_error(
+        request: Request, exc: services.exceptions.AuthenticationError
+    ) -> ORJSONResponse:
+        return ORJSONResponse(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            content={
+                "message": str(exc) if settings.DEBUG else "Invalid/missing credentials",
+                "error_code": "authentication_failed",
+            },
+        )
+
     @app.exception_handler(Exception)
     def handle_internal_server_error(request: Request, exc: Exception) -> ORJSONResponse:
         return ORJSONResponse(

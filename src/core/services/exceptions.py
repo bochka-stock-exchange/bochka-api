@@ -19,9 +19,9 @@ class EntityReadError(ServiceError):
 class EntityNotFoundError(ServiceError):
     """Raised when an entity cannot be found for a given operation, such as update or delete."""
 
-    def __init__(self, service_name: str, read_param: str):
+    def __init__(self, service_name: str, identifier: str):
         super().__init__(
-            f"{service_name} failed to find entity with requested identifier ({read_param})"
+            f"{service_name} failed to find entity with requested identifier ({identifier})"
         )
 
 
@@ -39,16 +39,20 @@ class EntityDeleteError(ServiceError):
         super().__init__(f"{service_name} failed to delete entity. Reason: {reason}")
 
 
-class PermissionDeniedError(ServiceError):
+class PermissionDeniedError(ServiceError):  # 403
     """Raised when an action is forbidden for the user."""
 
-    def __init__(self, service_name: str, reason: str):
-        super().__init__(f"Forbidden in {service_name}. Reason: {reason}")
+    def __init__(self, reason: str, service_name: str | None = None):
+        msg = (
+            f"Forbidden in {service_name}. Reason: {reason}"
+            if service_name
+            else f"Forbidden. Reason: {reason}"
+        )
+        super().__init__(msg)
 
 
 class AuthenticationError(ServiceError):  # 401
     """Invalid/missing credentials"""
 
-
-class AuthorizationError(ServiceError):  # 403
-    """Valid credentials but insufficient permissions"""
+    def __init__(self, reason: str):
+        super().__init__(f"Authentication failed. Reason: {reason}")

@@ -30,9 +30,4 @@ class Users(core.services.BaseCRUD[schemas.UserCreate, schemas.UserRead, schemas
         except Exception as e:
             raise core.services.exceptions.EntityReadError(self.__class__.__name__, str(e)) from e
 
-        if not user_data:
-            raise core.services.exceptions.PermissionDeniedError(
-                self.__class__.__name__, "Invalid Credentials."
-            )
-
-        return self.read_schema.model_validate(user_data)
+        return self.read_schema.model_validate(user_data) if user_data else None
