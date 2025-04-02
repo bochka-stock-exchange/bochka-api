@@ -1,9 +1,7 @@
-from pathlib import Path
-
 from pydantic import PostgresDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-ENV_FILE_PATH: Path = Path(__file__).parents[3] / ".env"
+from src.core.settings import env_config
 
 
 class PostgreSQLSettings(BaseSettings):
@@ -14,7 +12,7 @@ class PostgreSQLSettings(BaseSettings):
     DB: str = "postgres"
 
     model_config = SettingsConfigDict(
-        env_file=ENV_FILE_PATH, extra="ignore", env_prefix="POSTGRES_"
+        env_file=env_config.ENV_FILE_PATH, extra="ignore", env_prefix="POSTGRES_"
     )
 
     @property
