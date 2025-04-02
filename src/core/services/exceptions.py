@@ -44,3 +44,11 @@ class PermissionDeniedError(ServiceError):
 
     def __init__(self, service_name: str, reason: str):
         super().__init__(f"Forbidden in {service_name}. Reason: {reason}")
+
+
+class AuthenticationError(ServiceError):  # 401
+    """Invalid/missing credentials"""
+
+
+class AuthorizationError(ServiceError):  # 403
+    """Valid credentials but insufficient permissions"""
