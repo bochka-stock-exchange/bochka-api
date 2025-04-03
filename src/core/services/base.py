@@ -31,9 +31,12 @@ class BaseCRUD[TCreate: BaseModel, TRead: BaseModel, TUpdate: BaseModel]:
 
         try:
             entity = await self.repo.create(session, data)
-        except Exception as e:
+        except repositories.exceptions.EntityCreateError as e:
             logger.service_logger.error(f"Error creating {self.create_schema.__name__}: {e!s}")
             raise services.exceptions.EntityCreateError(self.__class__.__name__, str(e)) from e
+        except repositories.exceptions.DatabaseError as e:
+            logger.service_logger.error(f"Database error: {e!s}")
+            raise services.exceptions.DatabaseError(self.__class__.__name__, str(e)) from e
 
         logger.service_logger.info(f"Successfully created {self.create_schema.__name__}.")
 

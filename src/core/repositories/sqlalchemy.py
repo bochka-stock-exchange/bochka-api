@@ -2,6 +2,7 @@ from collections.abc import Sequence
 from typing import TypeVar
 
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core import logger, models, repositories
@@ -15,20 +16,23 @@ class BaseCRUD(repositories.abstract.Abstract[ModelType]):
 
     async def create(self, session: AsyncSession, data: dict) -> ModelType:
         logger.repository_logger.info(f"Creating a new {self.model.__name__}: {data}")
-
         try:
             instance = self.model(**data)
             session.add(instance)
             await session.flush()
             await session.refresh(instance)
+        except IntegrityError as e:
+            logger.repository_logger.error(f"Constraint violation. Error: {e}", exc_info=True)
+            raise repositories.exceptions.EntityCreateError(
+                self.__class__.__name__, self.model.__tablename__, str(e)
+            ) from e
         except Exception as e:
-            logger.repository_logger.error(
-                f"Error creating {self.model.__name__}: {data}, Error: {e}",
+            logger.repository_logger.critical(
+                f"Database error: {e}",
                 exc_info=True,
             )
-            raise repositories.exceptions.EntityCreateError(
+            raise repositories.exceptions.DatabaseError(
                 self.__class__.__name__,
-                self.model.__tablename__,
                 str(e),
             ) from e
 
@@ -44,14 +48,18 @@ class BaseCRUD(repositories.abstract.Abstract[ModelType]):
             await session.flush()
             for instance in instances:
                 await session.refresh(instance)
+        except IntegrityError as e:
+            logger.repository_logger.error(f"Constraint violation. Error: {e}", exc_info=True)
+            raise repositories.exceptions.EntityCreateError(
+                self.__class__.__name__, self.model.__tablename__, str(e)
+            ) from e
         except Exception as e:
-            logger.repository_logger.error(
-                f"Error creating multiple {self.model.__name__} entities: {e}",
+            logger.repository_logger.critical(
+                f"Database error: {e}",
                 exc_info=True,
             )
-            raise repositories.exceptions.EntityCreateError(
+            raise repositories.exceptions.DatabaseError(
                 self.__class__.__name__,
-                self.model.__tablename__,
                 str(e),
             ) from e
 

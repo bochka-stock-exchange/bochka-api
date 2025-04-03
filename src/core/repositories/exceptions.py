@@ -55,3 +55,10 @@ class EntityDeleteError(RepositoryError):
             f"{repo_name} failed to delete entity in {table_name} "
             f"with ID: {identifier}. Reason: {reason}",
         )
+
+
+class DatabaseError(RepositoryError):
+    """Database error 500 status code"""
+
+    def __init__(self, repo_name: str, reason: str):
+        super().__init__(f"{repo_name} had a database error. Reason: {reason}")

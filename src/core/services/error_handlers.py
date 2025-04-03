@@ -91,6 +91,18 @@ def register_error_handlers(app: FastAPI) -> None:
             },
         )
 
+    @app.exception_handler(services.exceptions.DatabaseError)
+    def handle_database_error(
+        request: Request, exc: services.exceptions.DatabaseError
+    ) -> ORJSONResponse:
+        return ORJSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={
+                "message": str(exc) if settings.DEBUG else "Database error",
+                "error_code": "database_error",
+            },
+        )
+
     @app.exception_handler(Exception)
     def handle_internal_server_error(request: Request, exc: Exception) -> ORJSONResponse:
         return ORJSONResponse(

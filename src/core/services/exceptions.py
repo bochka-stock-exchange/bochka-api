@@ -9,6 +9,13 @@ class EntityCreateError(ServiceError):
         super().__init__(f"{service_name} failed to create entity. Reason: {reason}")
 
 
+class DatabaseError(ServiceError):
+    """Raised when there is a database error."""
+
+    def __init__(self, service_name: str, reason: str):
+        super().__init__(f"{service_name} had a database error. Reason: {reason}")
+
+
 class EntityReadError(ServiceError):
     """Raised when an entity cannot be read in the service layer."""
 
@@ -43,11 +50,7 @@ class PermissionDeniedError(ServiceError):  # 403
     """Raised when an action is forbidden for the user."""
 
     def __init__(self, reason: str, service_name: str | None = None):
-        msg = (
-            f"Forbidden in {service_name}. Reason: {reason}"
-            if service_name
-            else f"Forbidden. Reason: {reason}"
-        )
+        msg = f"Forbidden. Reason: {reason}" + (f" in {service_name}" if service_name else "")
         super().__init__(msg)
 
 
