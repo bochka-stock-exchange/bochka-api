@@ -6,7 +6,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from uuid_v7.base import uuid7
 
 from src import core
-from src.app import models
+from src.app import models, schemas
+from src.app.api.v1 import dependencies
 from src.core.db import get_db_manager
 from src.main import app
 
@@ -34,7 +35,11 @@ async def db_session(setup_db_schema) -> AsyncGenerator[AsyncSession]:
 
 
 @pytest.fixture(scope="function")
-async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient]:
+async def anonim_client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient]:
+    """
+    Yields:
+        AsyncClient: Non-authenticated client
+    """
     app.dependency_overrides[db_manager.get_session] = lambda: db_session
 
     async with AsyncClient(
@@ -44,6 +49,15 @@ async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient]:
         yield client
 
     app.dependency_overrides = {}
+
+
+@pytest.fixture(scope="function")
+def admin_client(anonim_client: AsyncClient, admin_user: models.User) -> AsyncClient:
+    app.dependency_overrides[dependencies.get_current_user] = (
+        lambda: schemas.UserRead.model_validate(admin_user)
+    )
+
+    return anonim_client
 
 
 @pytest.fixture(scope="function")

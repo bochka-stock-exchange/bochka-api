@@ -28,13 +28,3 @@ async def delete_instrument(
 ):
     await instruments_service.delete_by_id(session, ticker)
     return {"deleted": ticker}
-
-
-@router.get("/users-all", dependencies=[Depends(dependencies.get_admin_user)])
-async def get_all_users(
-    users_service: dependencies.UsersService,
-    session: dependencies.DBSession,
-    page: int = 1,
-    limit: int = 10,
-) -> list[schemas.UserRead]:
-    return await users_service.read_all(session, page=page, limit=limit)

@@ -71,6 +71,7 @@ class BaseCRUD[TCreate: BaseModel, TRead: BaseModel, TUpdate: BaseModel]:
         logger.service_logger.info(
             f"Reading all {self.read_schema.__name__} entities (Page: {page}, Limit: {limit})",
         )
+        limit = min(limit, 100)
 
         entities = await self.repo.read_all(session, page, limit)
 

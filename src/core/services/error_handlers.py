@@ -52,7 +52,7 @@ def register_error_handlers(app: FastAPI) -> None:
     @app.exception_handler(exceptions.DatabaseError)
     def handle_database_error(request: Request, exc: exceptions.DatabaseError) -> ORJSONResponse:
         return make_error_response(
-            str(exc), "Database error", "database_error", status.HTTP_400_BAD_REQUEST
+            str(exc), "Database error", "database_error", status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
     @app.exception_handler(exceptions.EntityNotFoundError)
@@ -63,7 +63,7 @@ def register_error_handlers(app: FastAPI) -> None:
             str(exc),
             "Requested resource not found",
             "resource_not_found",
-            status.HTTP_400_BAD_REQUEST,
+            status.HTTP_404_NOT_FOUND,
         )
 
     @app.exception_handler(exceptions.PermissionDeniedError)
@@ -74,7 +74,7 @@ def register_error_handlers(app: FastAPI) -> None:
             str(exc),
             "Access to this resource is forbidden",
             "forbidden_access",
-            status.HTTP_400_BAD_REQUEST,
+            status.HTTP_403_FORBIDDEN,
         )
 
     @app.exception_handler(exceptions.AuthenticationError)
@@ -85,11 +85,14 @@ def register_error_handlers(app: FastAPI) -> None:
             str(exc),
             "Invalid/missing credentials",
             "authentication_failed",
-            status.HTTP_400_BAD_REQUEST,
+            status.HTTP_401_UNAUTHORIZED,
         )
 
     @app.exception_handler(Exception)
     def handle_internal_server_error(request: Request, exc: Exception) -> ORJSONResponse:
         return make_error_response(
-            str(exc), "Internal server error", "internal_error", status.HTTP_400_BAD_REQUEST
+            str(exc),
+            "Internal server error",
+            "internal_error",
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
         )

@@ -42,6 +42,16 @@ async def get_instruments(
     return await instruments_service.read_all(session)
 
 
+@router.get("/users-all")
+async def get_all_users(
+    users_service: dependencies.UsersService,
+    session: dependencies.DBSession,
+    page: int = 1,
+    limit: int = 10,
+) -> list[schemas.UserRead]:
+    return await users_service.read_all(session, page=page, limit=limit)
+
+
 @router.get("/orderbook/{ticker}")
 async def get_orderbook(ticker: str):
     raise NotImplementedError
