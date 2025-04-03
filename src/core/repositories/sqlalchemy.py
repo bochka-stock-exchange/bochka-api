@@ -26,8 +26,12 @@ class BaseCRUD(repositories.abstract.Abstract[ModelType]):
                 f"Constraint violation creating {self.model.__name__} with data {data}. Error: {e}",
                 exc_info=True,
             )
+            if "duplicate" in (err_info := str(e)):
+                raise exceptions.DuplicateError(
+                    self.__class__.__name__, self.model.__tablename__, err_info
+                ) from e
             raise exceptions.EntityCreateError(
-                self.__class__.__name__, self.model.__tablename__, str(e)
+                self.__class__.__name__, self.model.__tablename__, err_info
             ) from e
         except Exception as e:
             logger.repository_logger.critical(
@@ -51,6 +55,10 @@ class BaseCRUD(repositories.abstract.Abstract[ModelType]):
             for instance in instances:
                 await session.refresh(instance)
         except IntegrityError as e:
+            if "duplicate" in repr(e):
+                raise exceptions.DuplicateError(
+                    self.__class__.__name__, self.model.__tablename__, str(e)
+                ) from e
             raise exceptions.EntityCreateError(
                 self.__class__.__name__, self.model.__tablename__, str(e)
             ) from e

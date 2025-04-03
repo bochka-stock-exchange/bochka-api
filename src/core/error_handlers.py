@@ -18,13 +18,22 @@ def make_error_response(
     )
 
 
-def register_error_handlers(app: FastAPI) -> None:
+def register_error_handlers(app: FastAPI) -> None:  # noqa: C901
     @app.exception_handler(exceptions.EntityCreateError)
     def handle_entity_create_error(
         request: Request, exc: exceptions.EntityCreateError
     ) -> ORJSONResponse:
         return make_error_response(
-            str(exc), "Cannot create resource", "create_failed", status.HTTP_400_BAD_REQUEST
+            str(exc), "Failed to create resource", "create_failed", status.HTTP_400_BAD_REQUEST
+        )
+
+    @app.exception_handler(exceptions.DuplicateError)
+    def handle_duplicate_error(request: Request, exc: exceptions.DuplicateError) -> ORJSONResponse:
+        return make_error_response(
+            str(exc),
+            "Failed to create resource: duplicate",
+            "create_failed_duplicate",
+            status.HTTP_400_BAD_REQUEST,
         )
 
     @app.exception_handler(exceptions.EntityReadError)
@@ -74,7 +83,7 @@ def register_error_handlers(app: FastAPI) -> None:
     ) -> ORJSONResponse:
         return make_error_response(
             str(exc),
-            "Access to this resource is forbidden",
+            "Access forbidden",
             "forbidden_access",
             status.HTTP_403_FORBIDDEN,
         )

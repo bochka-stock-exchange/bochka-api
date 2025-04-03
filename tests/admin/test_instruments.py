@@ -46,9 +46,7 @@ async def test_create_instrument_duplicate(
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
 
-    response_data = response.json()
-    assert response_data.get("error_code") == "create_failed"
-    assert "duplicate" in response_data.get("message")
+    assert response.json().get("error_code") == "create_failed_duplicate"
 
 
 async def test_delete_instrument_failed_404(
