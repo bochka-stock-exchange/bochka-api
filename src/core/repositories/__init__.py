@@ -1,7 +1,6 @@
-from . import abstract, exceptions, sqlalchemy
+from . import abstract, sqlalchemy
 
 __all__ = [
     "abstract",
-    "exceptions",
     "sqlalchemy",
 ]

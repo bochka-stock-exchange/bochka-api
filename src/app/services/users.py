@@ -16,7 +16,7 @@ class Users(core.services.BaseCRUD[schemas.UserCreate, schemas.UserRead, schemas
         )
 
     @staticmethod
-    def prepare_data(data: dict) -> dict:
+    def _prepare_data(data: dict) -> dict:
         data["api_key"] = "key-" + str(uuid7())
         return data
 
@@ -25,9 +25,6 @@ class Users(core.services.BaseCRUD[schemas.UserCreate, schemas.UserRead, schemas
         session: AsyncSession,
         api_key: str,
     ) -> schemas.UserRead | None:
-        try:
-            user_data = await self.repo.get_by_api_key(session, api_key)
-        except Exception as e:
-            raise core.services.exceptions.EntityReadError(self.__class__.__name__, str(e)) from e
+        user_data = await self.repo.get_by_api_key(session, api_key)
 
         return self.read_schema.model_validate(user_data) if user_data else None

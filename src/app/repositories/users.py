@@ -13,9 +13,7 @@ class Users(core.repositories.sqlalchemy.BaseCRUD[models.User]):
         try:
             return await session.scalar(select(models.User).where(models.User.api_key == api_key))
         except Exception as e:
-            raise core.repositories.exceptions.EntityReadError(
+            raise core.exceptions.DatabaseError(
                 self.__class__.__name__,
-                self.model.__tablename__,
-                "",
                 str(e),
             ) from e

@@ -38,17 +38,17 @@ async def get_current_user(
     token: Token,
 ) -> schemas.UserRead:
     if not token:
-        raise core.services.exceptions.AuthenticationError("Token is missing")
+        raise core.exceptions.AuthenticationError("Token is missing")
 
     if not token.startswith(token_prefix):
-        raise core.services.exceptions.AuthenticationError(
+        raise core.exceptions.AuthenticationError(
             f"Invalid token format: {token}. Should be: {token_prefix} <api_key>"
         )
 
     api_key = token[len(token_prefix) + 1 :].strip()
     user = await service.get_by_api_key(session, api_key)
     if not user:
-        raise core.services.exceptions.AuthenticationError(f"Invalid token: {token}")
+        raise core.exceptions.AuthenticationError(f"Invalid token: {token}")
 
     return user
 
@@ -60,7 +60,7 @@ def get_admin_user(
     current_user: CurrentUser,
 ) -> schemas.UserRead:
     if current_user.role != UserRole.ADMIN:
-        raise core.services.exceptions.PermissionDeniedError(
+        raise core.exceptions.PermissionDeniedError(
             f"{UserRole.ADMIN} role required. Your role: {current_user.role}"
         )
     return current_user

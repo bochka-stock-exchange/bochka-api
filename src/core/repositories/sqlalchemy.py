@@ -5,7 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.core import logger, models, repositories
+from src.core import exceptions, logger, models, repositories
 
 ModelType = TypeVar("ModelType", bound=models.Base)
 
@@ -22,8 +22,11 @@ class BaseCRUD(repositories.abstract.Abstract[ModelType]):
             await session.flush()
             await session.refresh(instance)
         except IntegrityError as e:
-            logger.repository_logger.error(f"Constraint violation. Error: {e}", exc_info=True)
-            raise repositories.exceptions.EntityCreateError(
+            logger.repository_logger.error(
+                f"Constraint violation creating {self.model.__name__} with data {data}. Error: {e}",
+                exc_info=True,
+            )
+            raise exceptions.EntityCreateError(
                 self.__class__.__name__, self.model.__tablename__, str(e)
             ) from e
         except Exception as e:
@@ -31,7 +34,7 @@ class BaseCRUD(repositories.abstract.Abstract[ModelType]):
                 f"Database error: {e}",
                 exc_info=True,
             )
-            raise repositories.exceptions.DatabaseError(
+            raise exceptions.DatabaseError(
                 self.__class__.__name__,
                 str(e),
             ) from e
@@ -41,7 +44,6 @@ class BaseCRUD(repositories.abstract.Abstract[ModelType]):
 
     async def create_many(self, session: AsyncSession, data_list: list[dict]) -> list[ModelType]:
         logger.repository_logger.info(f"Creating multiple {self.model.__name__} entities")
-
         try:
             instances = [self.model(**data) for data in data_list]
             session.add_all(instances)
@@ -49,20 +51,14 @@ class BaseCRUD(repositories.abstract.Abstract[ModelType]):
             for instance in instances:
                 await session.refresh(instance)
         except IntegrityError as e:
-            logger.repository_logger.error(f"Constraint violation. Error: {e}", exc_info=True)
-            raise repositories.exceptions.EntityCreateError(
+            raise exceptions.EntityCreateError(
                 self.__class__.__name__, self.model.__tablename__, str(e)
             ) from e
         except Exception as e:
-            logger.repository_logger.critical(
-                f"Database error: {e}",
-                exc_info=True,
-            )
-            raise repositories.exceptions.DatabaseError(
+            raise exceptions.DatabaseError(
                 self.__class__.__name__,
                 str(e),
             ) from e
-
         logger.repository_logger.info(
             f"Successfully created multiple {self.model.__name__} entities",
         )
@@ -78,14 +74,12 @@ class BaseCRUD(repositories.abstract.Abstract[ModelType]):
         try:
             entity = await session.get(self.model, entity_id)
         except Exception as e:
-            logger.repository_logger.error(
-                f"Error fetching {self.model.__name__} with ID: {entity_id}, Error: {e}",
+            logger.repository_logger.critical(
+                f"Database error: {e}",
                 exc_info=True,
             )
-            raise repositories.exceptions.EntityReadError(
+            raise exceptions.DatabaseError(
                 self.__class__.__name__,
-                self.model.__tablename__,
-                f"entity_id: {entity_id}",
                 str(e),
             ) from e
 
@@ -112,14 +106,12 @@ class BaseCRUD(repositories.abstract.Abstract[ModelType]):
             )
             entities = result.all()
         except Exception as e:
-            logger.repository_logger.error(
-                f"Error fetching all {self.model.__name__} entities, Error: {e}",
+            logger.repository_logger.critical(
+                f"Database error: {e}",
                 exc_info=True,
             )
-            raise repositories.exceptions.EntityReadError(
+            raise exceptions.DatabaseError(
                 self.__class__.__name__,
-                self.model.__tablename__,
-                "",
                 str(e),
             ) from e
 
@@ -148,7 +140,7 @@ class BaseCRUD(repositories.abstract.Abstract[ModelType]):
                 f"Error updating {self.model.__name__} with ID: {entity_id}, Error: {e}",
                 exc_info=True,
             )
-            raise repositories.exceptions.EntityUpdateError(
+            raise exceptions.EntityUpdateError(
                 self.__class__.__name__,
                 self.model.__tablename__,
                 f"entity_id: {entity_id}",
@@ -180,7 +172,7 @@ class BaseCRUD(repositories.abstract.Abstract[ModelType]):
                 f"Error deleting {self.model.__name__} with ID: {entity_id}, Error: {e}",
                 exc_info=True,
             )
-            raise repositories.exceptions.EntityDeleteError(
+            raise exceptions.EntityDeleteError(
                 self.__class__.__name__,
                 self.model.__tablename__,
                 f"entity_id: {entity_id}",
