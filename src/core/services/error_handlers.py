@@ -6,7 +6,9 @@ from src.core import config, exceptions
 settings = config.get_settings()
 
 
-def make_error_response(message: str, user_message: str, error_code: str, http_status: int):
+def make_error_response(
+    message: str, user_message: str, error_code: str, http_status: int
+) -> ORJSONResponse:
     return ORJSONResponse(
         status_code=http_status,
         content={

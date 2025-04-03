@@ -14,8 +14,8 @@ class EntityNotFoundError(ServiceError):
 class PermissionDeniedError(ServiceError):  # 403
     """Raised when an action is forbidden for the user."""
 
-    def __init__(self, reason: str, service_name: str | None = None):
-        msg = f"Forbidden. Reason: {reason}" + (
+    def __init__(self, message: str, service_name: str | None = None):
+        msg = f"Forbidden. Detail: {message}" + (
             f" in {service_name} service" if service_name else ""
         )
         super().__init__(msg)
@@ -24,8 +24,8 @@ class PermissionDeniedError(ServiceError):  # 403
 class AuthenticationError(ServiceError):  # 401
     """Invalid/missing credentials"""
 
-    def __init__(self, reason: str):
-        super().__init__(f"Authentication failed. Reason: {reason}")
+    def __init__(self, message: str):
+        super().__init__(f"Authentication failed. Detail: {message}")
 
 
 class RepositoryError(Exception):

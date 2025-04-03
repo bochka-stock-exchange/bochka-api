@@ -52,12 +52,31 @@ async def anonim_client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient]
 
 
 @pytest.fixture(scope="function")
+def user_client(anonim_client: AsyncClient, user: models.User) -> AsyncClient:
+    app.dependency_overrides[dependencies.get_current_user] = (
+        lambda: schemas.UserRead.model_validate(user)
+    )
+    return anonim_client
+
+
+@pytest.fixture(scope="function")
 def admin_client(anonim_client: AsyncClient, admin_user: models.User) -> AsyncClient:
     app.dependency_overrides[dependencies.get_current_user] = (
         lambda: schemas.UserRead.model_validate(admin_user)
     )
-
     return anonim_client
+
+
+@pytest.fixture(scope="function")
+async def user(db_session: AsyncSession) -> models.User:
+    user = models.User(
+        name="User",
+        role=models.UserRole.USER,
+        api_key="key-" + str(uuid7()),
+    )
+    db_session.add(user)
+    await db_session.flush()
+    return user
 
 
 @pytest.fixture(scope="function")
