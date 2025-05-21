@@ -6,13 +6,13 @@ from src.app.api import dependencies
 router = APIRouter(prefix="/public", tags=["public"])
 
 
-@router.post("/register", response_model=schemas.users.Read)
+@router.post("/register", response_model=schemas.users.Auth)
 async def register(
     user_create: schemas.users.Create,
-    service: dependencies.services.Users,
+    auth_service: dependencies.services.Auth,
     uow: dependencies.uow.Postgres,
 ):
-    return await service.create(uow, user_create)
+    return await auth_service.auth_user(uow, user_create)
 
 
 @router.get("/instrument", response_model=list[schemas.instruments.Read])

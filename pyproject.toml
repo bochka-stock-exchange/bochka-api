@@ -7,12 +7,12 @@ requires-python = ">=3.11"
 dependencies = [
     "alembic>=1.15.2",
     "asyncpg>=0.30.0",
-    "cryptography>=45.0.2",
     "fastapi[standard]>=0.115.12",
     "greenlet>=3.2.2",
     "hypercorn>=0.17.3",
     "orjson>=3.10.18",
     "pydantic-settings>=2.9.1",
+    "python-jose>=3.4.0",
     "python-json-logger>=3.3.0",
     "sqlalchemy>=2.0.41",
     "uuid-v7>=1.0.0",

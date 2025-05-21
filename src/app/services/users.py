@@ -21,3 +21,13 @@ class Users(
             update_schema=schemas.users.Update,
             filters_schema=schemas.users.Filters,
         )
+
+    async def read_by_name(self, uow: core.UnitOfWork, name: str) -> schemas.users.Read:
+        user = await self.repo.read_by_name(uow, name)
+
+        if not user:
+            raise core.services.exceptions.EntityNotFoundError(
+                self.__class__.__name__, f"name={name}"
+            )
+
+        return await self._validate_data(user)

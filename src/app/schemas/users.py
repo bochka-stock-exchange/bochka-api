@@ -1,10 +1,8 @@
-import base64
 import enum
 from typing import Annotated
 from uuid import UUID
 
-from cryptography.fernet import Fernet
-from pydantic import BaseModel, ConfigDict, Field, computed_field
+from pydantic import BaseModel, ConfigDict, Field
 
 from src import core
 from src.app import models
@@ -28,20 +26,6 @@ class Read(Base):
     id: UUID
     role: models.UserRole
 
-    @computed_field
-    @property
-    def api_key(self) -> str:
-        # Генерируем ключ для шифрования на основе SECRET_KEY
-        # SECRET_KEY должен быть длиной 32 url-safe base64-encoded bytes
-        # Если ваш SECRET_KEY не подходит, можно сделать так:
-        key = base64.urlsafe_b64encode(settings.SECRET_KEY.ljust(32)[:32].encode())
-
-        cipher_suite = Fernet(key)
-
-        encrypted = cipher_suite.encrypt(str(self.id).encode())
-
-        return encrypted.decode()
-
     model_config = ConfigDict(from_attributes=True, use_enum_values=True)
 
 
@@ -61,3 +45,9 @@ class SortParams(core.schemas.SortParams):
 
 class ReadManyParams(Filters, SortParams, core.schemas.PaginationParams):
     pass
+
+
+class Auth(Base):
+    id: UUID
+    role: models.UserRole
+    api_key: str

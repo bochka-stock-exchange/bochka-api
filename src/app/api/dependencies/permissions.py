@@ -1,9 +1,5 @@
-import base64
 from typing import Annotated
-from uuid import UUID
 
-import cryptography.fernet
-from cryptography.fernet import Fernet
 from fastapi import Depends, Security
 from fastapi.security import APIKeyHeader
 
@@ -28,16 +24,8 @@ Token = Annotated[
 ]
 
 
-def decrypt_api_key(encrypted_api_key: str) -> UUID:
-    key = base64.urlsafe_b64encode(settings.SECRET_KEY.ljust(32)[:32].encode())
-    cipher_suite = Fernet(key)
-
-    decrypted = cipher_suite.decrypt(encrypted_api_key.encode())
-    return UUID(decrypted.decode())
-
-
 async def get_current_user(
-    service: services.Users,
+    auth_service: services.Auth,
     uow: uow.Postgres,
     token: Token,
 ) -> schemas.users.Read:
@@ -51,16 +39,7 @@ async def get_current_user(
 
     api_key = token[len(token_prefix) + 1 :].strip()
 
-    try:
-        user_id = decrypt_api_key(api_key)
-    except cryptography.fernet.InvalidToken as err:
-        raise core.services.exceptions.AuthenticationError(f"Invalid token: {token}") from err
-
-    user = await service.read_by_id(uow, user_id)
-    if not user:
-        raise core.services.exceptions.AuthenticationError(f"Invalid token: {token}")
-
-    return user
+    return await auth_service.read_user_by_token(uow, api_key)
 
 
 CurrentUser = Annotated[schemas.users.Read, Depends(get_current_user)]
