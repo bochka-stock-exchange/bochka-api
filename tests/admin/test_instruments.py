@@ -4,7 +4,8 @@ from httpx import AsyncClient
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.app.models import Instrument, User
+from src.app import schemas
+from src.app.models import Instrument
 
 pytestmark = pytest.mark.asyncio(loop_scope="session")
 
@@ -12,7 +13,7 @@ pytestmark = pytest.mark.asyncio(loop_scope="session")
 async def test_create_instrument_success(
     db_session: AsyncSession,
     anonim_client: AsyncClient,
-    admin_user: User,
+    admin_user: schemas.users.Read,
 ):
     instrument_data = {"ticker": "USD", "name": "Доллар США"}
     headers = {"Authorization": f"TOKEN {admin_user.api_key}"}

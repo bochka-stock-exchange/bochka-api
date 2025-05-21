@@ -1,8 +1,8 @@
-"""init
+"""empty message
 
-Revision ID: 81209b79c258
+Revision ID: f15e03fc8d52
 Revises: 
-Create Date: 2025-05-21 17:31:27.582727
+Create Date: 2025-05-21 19:32:53.739623
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '81209b79c258'
+revision: str = 'f15e03fc8d52'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -32,12 +32,10 @@ def upgrade() -> None:
     sa.Column('id', sa.UUID(), nullable=False),
     sa.Column('name', sa.String(length=255), nullable=False),
     sa.Column('role', sa.Enum('USER', 'ADMIN', name='userrole'), nullable=False),
-    sa.Column('api_key', sa.String(length=255), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text("timezone('UTC', now())"), nullable=False),
     sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text("timezone('UTC', now())"), nullable=False),
     sa.Column('deleted_at', sa.DateTime(timezone=True), nullable=True),
-    sa.PrimaryKeyConstraint('id', name=op.f('pk_users')),
-    sa.UniqueConstraint('api_key', name=op.f('uq_users_api_key'))
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_users'))
     )
     op.create_table('balance_operations',
     sa.Column('id', sa.UUID(), nullable=False),

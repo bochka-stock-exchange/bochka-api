@@ -6,48 +6,21 @@ from src.app.api import dependencies
 router = APIRouter(prefix="/public", tags=["public"])
 
 
-@router.post("/healthcheck")
-async def healthcheck():
-    return 1
-
-
 @router.post("/register", response_model=schemas.users.Read)
 async def register(
     user_create: schemas.users.Create,
-    users_service: dependencies.UsersService,
-    uow: dependencies.UoWPostgres,
+    service: dependencies.services.Users,
+    uow: dependencies.uow.Postgres,
 ):
-    return await users_service.create(uow, user_create)
-
-
-@router.get("/profile", response_model=schemas.users.Read)
-async def get_profile(
-    current_user: dependencies.CurrentUser,
-):
-    return current_user
-
-
-@router.get("/profile-admin", response_model=schemas.users.Read)
-async def get_profile_admin(
-    current_user: dependencies.AdminUser,
-):
-    return current_user
+    return await service.create(uow, user_create)
 
 
 @router.get("/instrument", response_model=list[schemas.instruments.Read])
 async def get_instruments(
-    instruments_service: dependencies.InstrumentsService,
-    uow: dependencies.UoWPostgres,
+    service: dependencies.services.Instruments,
+    uow: dependencies.uow.Postgres,
 ):
-    return await instruments_service.read_many(uow)
-
-
-@router.get("/users-all")
-async def get_all_users(
-    users_service: dependencies.UsersService,
-    uow: dependencies.UoWPostgres,
-) -> list[schemas.users.Read]:
-    return await users_service.read_many(uow)
+    return await service.read_many(uow)
 
 
 @router.get("/orderbook/{ticker}")

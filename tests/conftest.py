@@ -5,7 +5,6 @@ from fastapi.testclient import TestClient
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
-from uuid_v7.base import uuid7
 
 import src.app
 from src import core
@@ -68,7 +67,6 @@ async def user(db_session: AsyncSession) -> models.User:
     user = models.User(
         name="User",
         role=models.UserRole.USER,
-        api_key="key-" + str(uuid7()),
     )
     db_session.add(user)
     await db_session.flush()
@@ -80,7 +78,6 @@ async def admin_user(db_session: AsyncSession) -> models.User:
     admin = models.User(
         name="Admin User",
         role=models.UserRole.ADMIN,
-        api_key="key-" + str(uuid7()),
     )
     db_session.add(admin)
     await db_session.flush()
@@ -89,7 +86,7 @@ async def admin_user(db_session: AsyncSession) -> models.User:
 
 @pytest.fixture(scope="function")
 def user_client(anonim_client: AsyncClient, user: models.User) -> AsyncClient:
-    app.dependency_overrides[dependencies.get_current_user] = (
+    app.dependency_overrides[dependencies.permissions.get_current_user] = (
         lambda: schemas.users.Read.model_validate(user)
     )
     return anonim_client
@@ -97,7 +94,7 @@ def user_client(anonim_client: AsyncClient, user: models.User) -> AsyncClient:
 
 @pytest.fixture(scope="function")
 def admin_client(anonim_client: AsyncClient, admin_user: models.User) -> AsyncClient:
-    app.dependency_overrides[dependencies.get_current_user] = (
+    app.dependency_overrides[dependencies.permissions.get_current_user] = (
         lambda: schemas.users.Read.model_validate(admin_user)
     )
     return anonim_client

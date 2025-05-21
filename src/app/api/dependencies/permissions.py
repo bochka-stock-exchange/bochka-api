@@ -1,32 +1,18 @@
-from collections.abc import AsyncGenerator, Callable
+import base64
 from typing import Annotated
+from uuid import UUID
 
+import cryptography.fernet
+from cryptography.fernet import Fernet
 from fastapi import Depends, Security
 from fastapi.security import APIKeyHeader
 
 from src import core
-from src.app import schemas, services
+from src.app import schemas
+from src.app.api.dependencies import services, uow
 from src.app.models import UserRole
 
 settings = core.config.get_settings()
-
-
-def get_uow_factory(
-    *,
-    use_postgres: bool = True,
-) -> Callable[[], AsyncGenerator[core.UnitOfWork]]:
-    async def _get_uow() -> AsyncGenerator[core.UnitOfWork]:
-        async with core.UnitOfWork(use_postgres=use_postgres) as uow:
-            yield uow
-
-    return _get_uow
-
-
-UoWPostgres = Annotated[core.UnitOfWork, Depends(get_uow_factory(use_postgres=True))]
-
-UsersService = Annotated[services.Users, Depends()]
-InstrumentsService = Annotated[services.Instruments, Depends()]
-
 
 token_prefix = getattr(settings, "TOKEN_PREFIX", "TOKEN")
 
@@ -42,9 +28,17 @@ Token = Annotated[
 ]
 
 
+def decrypt_api_key(encrypted_api_key: str) -> UUID:
+    key = base64.urlsafe_b64encode(settings.SECRET_KEY.ljust(32)[:32].encode())
+    cipher_suite = Fernet(key)
+
+    decrypted = cipher_suite.decrypt(encrypted_api_key.encode())
+    return UUID(decrypted.decode())
+
+
 async def get_current_user(
-    service: UsersService,
-    uow: UoWPostgres,
+    service: services.Users,
+    uow: uow.Postgres,
     token: Token,
 ) -> schemas.users.Read:
     if not token:
@@ -56,7 +50,13 @@ async def get_current_user(
         )
 
     api_key = token[len(token_prefix) + 1 :].strip()
-    user = await service.get_by_api_key(uow, api_key)
+
+    try:
+        user_id = decrypt_api_key(api_key)
+    except cryptography.fernet.InvalidToken as err:
+        raise core.services.exceptions.AuthenticationError(f"Invalid token: {token}") from err
+
+    user = await service.read_by_id(uow, user_id)
     if not user:
         raise core.services.exceptions.AuthenticationError(f"Invalid token: {token}")
 
@@ -77,5 +77,3 @@ def get_admin_user(
 
 
 AdminUser = Annotated[schemas.users.Read, Depends(get_admin_user)]
-
-Pagination = Annotated[core.schemas.PaginationParams, Depends()]

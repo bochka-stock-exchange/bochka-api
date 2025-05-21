@@ -26,7 +26,6 @@ class User(core.models.sqlalchemy.Base, core.models.sqlalchemy.SoftDelete):
     id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid7)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     role: Mapped[UserRole] = mapped_column(Enum(UserRole), nullable=False, default=UserRole.USER)
-    api_key: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
 
     balances: Mapped[list["Balance"]] = relationship("Balance", back_populates="user")
     orders: Mapped[list["Order"]] = relationship("Order", back_populates="user")

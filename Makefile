@@ -144,11 +144,11 @@ create-env-windows:
 	)
 
 # Initialize the project on Unix systems (install dependencies, create .env file)
-uinit: install-deps create-env-unix keyfile-unix
+uinit: install-deps create-env-unix
 	@echo "Project initialized for Unix systems."
 
 # Initialize the project on Windows systems (install dependencies, create .env file)
-winit: install-deps create-env-windows keyfile-windows
+winit: install-deps create-env-windows
 	@echo "Project initialized for Windows systems."
 
 # Start the development environment and the app

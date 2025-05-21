@@ -1,9 +1,11 @@
+import logging.config
+
 from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
 
 from src import core
 from src.app import api
-import logging.config
+
 settings = core.config.get_settings()
 
 
