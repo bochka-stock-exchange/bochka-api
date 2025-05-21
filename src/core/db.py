@@ -1,7 +1,7 @@
-from collections.abc import AsyncGenerator
-from contextlib import asynccontextmanager
+import logging
+from typing import TypeVar
 
-from sqlalchemy import AsyncAdaptedQueuePool, NullPool
+from sqlalchemy import AsyncAdaptedQueuePool
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     AsyncSession,
@@ -11,35 +11,35 @@ from sqlalchemy.ext.asyncio import (
 
 from src.core import config, utils
 
+logger = logging.getLogger(__name__)
 
-@utils.Singleton
-class DatabaseManager:
+T = TypeVar("T")
+
+settings = config.get_settings()
+
+
+@utils.decorators.Singleton
+class PostgresManager:
     def __init__(self):
-        self.settings = config.get_settings()
         self.engine = self._create_engine()
         self.session_factory = self._create_session_factory()
 
-    def _create_engine(self) -> AsyncEngine:
+    @staticmethod
+    def _create_engine() -> AsyncEngine:
         return create_async_engine(
-            self.settings.POSTGRES.URL,
-            echo=self.settings.DEBUG,
-            poolclass=NullPool if self.settings.DEBUG else AsyncAdaptedQueuePool,
-            pool_recycle=900 if not self.settings.DEBUG else -1,
+            settings.POSTGRES.URL,
+            poolclass=AsyncAdaptedQueuePool,
+            pool_recycle=900,
         )
 
     def _create_session_factory(self) -> async_sessionmaker[AsyncSession]:
-        return async_sessionmaker(bind=self.engine, class_=AsyncSession, expire_on_commit=False)
+        return async_sessionmaker(
+            bind=self.engine, class_=AsyncSession, expire_on_commit=False, autobegin=False
+        )
 
-    async def get_session(self) -> AsyncGenerator[AsyncSession]:
-        async with self.session_factory.begin() as session:
-            yield session
-
-    # for manual testing
-    @asynccontextmanager
-    async def session_context(self) -> AsyncGenerator[AsyncSession]:
-        async with self.session_factory.begin() as session:
-            yield session
+    async def get_session(self) -> AsyncSession:
+        return self.session_factory()
 
 
-def get_db_manager():
-    return DatabaseManager()
+def get_postgres_manager() -> PostgresManager:
+    return PostgresManager()

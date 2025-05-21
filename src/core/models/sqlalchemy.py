@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import ClassVar
 
 from sqlalchemy import DateTime, MetaData, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
@@ -29,13 +30,11 @@ class Base(DeclarativeBase):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.timezone("UTC", func.now()),
-        nullable=False,
     )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.timezone("UTC", func.now()),
         onupdate=func.timezone("UTC", func.now()),
-        nullable=False,
     )
 
     repr_cols_num = 3
@@ -58,3 +57,8 @@ class Base(DeclarativeBase):
 
         cols_str = ", ".join(cols)
         return f"<{self.__class__.__name__}({cols_str})>"
+
+
+class SoftDelete:
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    __soft_delete_cascades__: ClassVar[tuple[str, ...]] = tuple()

@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
 from src.app import schemas
-from src.app.api.v1 import dependencies
+from src.app.api import dependencies
 
 router = APIRouter(prefix="/public", tags=["public"])
 
@@ -11,45 +11,43 @@ async def healthcheck():
     return 1
 
 
-@router.post("/register", response_model=schemas.UserRead)
+@router.post("/register", response_model=schemas.users.Read)
 async def register(
-    user_create: schemas.UserCreate,
+    user_create: schemas.users.Create,
     users_service: dependencies.UsersService,
-    session: dependencies.DBSession,
+    uow: dependencies.UoWPostgres,
 ):
-    return await users_service.create(session, user_create)
+    return await users_service.create(uow, user_create)
 
 
-@router.get("/profile", response_model=schemas.UserRead)
+@router.get("/profile", response_model=schemas.users.Read)
 async def get_profile(
     current_user: dependencies.CurrentUser,
 ):
     return current_user
 
 
-@router.get("/profile-admin", response_model=schemas.UserRead)
+@router.get("/profile-admin", response_model=schemas.users.Read)
 async def get_profile_admin(
     current_user: dependencies.AdminUser,
 ):
     return current_user
 
 
-@router.get("/instrument", response_model=list[schemas.InstrumentRead])
+@router.get("/instrument", response_model=list[schemas.instruments.Read])
 async def get_instruments(
     instruments_service: dependencies.InstrumentsService,
-    session: dependencies.DBSession,
+    uow: dependencies.UoWPostgres,
 ):
-    return await instruments_service.read_all(session)
+    return await instruments_service.read_many(uow)
 
 
 @router.get("/users-all")
 async def get_all_users(
     users_service: dependencies.UsersService,
-    session: dependencies.DBSession,
-    page: int = 1,
-    limit: int = 10,
-) -> list[schemas.UserRead]:
-    return await users_service.read_all(session, page=page, limit=limit)
+    uow: dependencies.UoWPostgres,
+) -> list[schemas.users.Read]:
+    return await users_service.read_many(uow)
 
 
 @router.get("/orderbook/{ticker}")

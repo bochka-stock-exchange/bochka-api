@@ -1,47 +1,44 @@
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
-from typing import TypeVar
+from typing import Any, TypeVar
 
-from sqlalchemy.ext.asyncio import AsyncSession
+from src.core.uow import UnitOfWork
 
 ModelType = TypeVar("ModelType")
 
 
-class Abstract[ModelType](ABC):
+class BaseCRUD[ModelType](ABC):
     @abstractmethod
-    async def create(self, session: AsyncSession, data: dict) -> ModelType:
+    async def create(self, uow: UnitOfWork, data: dict) -> ModelType:
         raise NotImplementedError
 
     @abstractmethod
-    async def create_many(self, session: AsyncSession, data_list: list[dict]) -> list[ModelType]:
+    async def create_many(self, uow: UnitOfWork, data_list: list[dict]) -> list[ModelType]:
         raise NotImplementedError
 
     @abstractmethod
     async def read_by_id(
-        self,
-        session: AsyncSession,
-        entity_id: int | str,
+        self, uow: UnitOfWork, entity_id: Any, *, include_deleted: bool = False
     ) -> ModelType | None:
         raise NotImplementedError
 
     @abstractmethod
-    async def read_all(
+    async def read_many(
         self,
-        session: AsyncSession,
+        uow: UnitOfWork,
+        filters: dict | None = None,
+        sorting: dict | None = None,
         page: int = 1,
         limit: int = 10,
+        *,
+        include_deleted: bool = False,
     ) -> Sequence[ModelType]:
         raise NotImplementedError
 
     @abstractmethod
-    async def update_by_id(
-        self,
-        session: AsyncSession,
-        entity_id: int | str,
-        data: dict,
-    ) -> ModelType | None:
+    async def update_by_id(self, uow: UnitOfWork, entity_id: Any, data: dict) -> ModelType | None:
         raise NotImplementedError
 
     @abstractmethod
-    async def delete_by_id(self, session: AsyncSession, entity_id: int | str) -> bool:
+    async def delete_by_id(self, uow: UnitOfWork, entity_id: Any) -> bool:
         raise NotImplementedError

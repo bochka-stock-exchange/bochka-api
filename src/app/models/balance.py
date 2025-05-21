@@ -17,7 +17,7 @@ class OperationType(enum.StrEnum):
     WITHDRAW = "WITHDRAW"
 
 
-class Balance(core.models.Base):
+class Balance(core.models.sqlalchemy.Base, core.models.sqlalchemy.SoftDelete):
     __tablename__ = "balances"
 
     repr_cols = ("user_id", "ticker", "amount")
@@ -38,7 +38,7 @@ class Balance(core.models.Base):
     instrument: Mapped["Instrument"] = relationship("Instrument", back_populates="balances")
 
 
-class BalanceOperation(core.models.Base):
+class BalanceOperation(core.models.sqlalchemy.Base, core.models.sqlalchemy.SoftDelete):
     __tablename__ = "balance_operations"
     repr_cols = ("id", "user_id", "ticker")
 

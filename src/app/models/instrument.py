@@ -6,7 +6,7 @@ from src.app.models.balance import Balance, BalanceOperation
 from src.app.models.order import Order, Transaction
 
 
-class Instrument(core.models.Base):
+class Instrument(core.models.sqlalchemy.Base, core.models.sqlalchemy.SoftDelete):
     __tablename__ = "instruments"
     repr_cols = ("ticker", "name")
 

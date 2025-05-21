@@ -29,7 +29,7 @@ class Direction(enum.StrEnum):
     SELL = "SELL"
 
 
-class Order(core.models.Base):
+class Order(core.models.sqlalchemy.Base, core.models.sqlalchemy.SoftDelete):
     __tablename__ = "orders"
     repr_cols = ("id", "user_id", "ticker")
 
@@ -59,7 +59,7 @@ class Order(core.models.Base):
     instrument: Mapped["Instrument"] = relationship("Instrument", back_populates="orders")
 
 
-class Transaction(core.models.Base):
+class Transaction(core.models.sqlalchemy.Base):
     __tablename__ = "transactions"
     repr_cols = ("id", "ticker", "amount")
 

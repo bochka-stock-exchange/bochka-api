@@ -2,7 +2,7 @@ from src.core import utils
 
 
 def test_singleton():
-    @utils.Singleton
+    @utils.decorators.Singleton
     class Decorated:
         def __init__(self, value):
             self.value = value

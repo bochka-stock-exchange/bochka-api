@@ -4,14 +4,7 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile.tests
-    environment:
-      DEBUG: "True"
-      POSTGRES_USER: "postgres"
-      POSTGRES_PASSWORD: "postgres"
-      POSTGRES_DB: "postgres"
-      POSTGRES_PORT: "5432"
-      POSTGRES_HOST: "tests_db"
-      SECRET_KEY: "some_secret_key_for_tests"
+    env_file: tests.env
     depends_on:
       tests_db:
         condition: service_healthy
@@ -19,12 +12,11 @@ services:
   tests_db:
     container_name: db_for_tests
     image: postgres:17-alpine
-    environment:
-      POSTGRES_USER: "postgres"
-      POSTGRES_PASSWORD: "postgres"
-      POSTGRES_DB: "postgres"
+    env_file: tests.env
     ports:
       - "5432:5432"
+    volumes:
+      - ./tests_data/pgdata:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD", "pg_isready", "-q", "-d", "$POSTGRES_DB", "-U", "$POSTGRES_USER"]
       interval: 5s

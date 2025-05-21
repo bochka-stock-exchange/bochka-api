@@ -1,33 +1,40 @@
 from collections.abc import AsyncGenerator
 
 import pytest
+from fastapi.testclient import TestClient
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 from uuid_v7.base import uuid7
 
+import src.app
 from src import core
 from src.app import models, schemas
-from src.app.api.v1 import dependencies
-from src.core.db import get_db_manager
+from src.app.api import dependencies
 from src.main import app
 
-pytest_plugins = ["pytest_asyncio"]
+postgres_manager = core.db.get_postgres_manager()
 
-db_manager = get_db_manager()
+
+@pytest.fixture(scope="session", autouse=True)
+def app_client():
+    with TestClient(src.app.create_app()) as client:
+        yield client
 
 
 @pytest.fixture(scope="session")
-async def setup_db_schema() -> AsyncGenerator[None]:
-    async with db_manager.engine.begin() as conn:
-        await conn.run_sync(core.models.Base.metadata.create_all)
-    yield
-    async with db_manager.engine.begin() as conn:
-        await conn.run_sync(core.models.Base.metadata.drop_all)
+async def setup_db_schema() -> None:
+    async with postgres_manager.engine.begin() as conn:
+        await conn.run_sync(core.models.sqlalchemy.Base.metadata.create_all)
+
+        if tables := core.models.sqlalchemy.Base.metadata.tables.values():
+            table_names = ",".join(f'"{table.name}"' for table in tables)
+            await conn.execute(text(f"TRUNCATE {table_names} RESTART IDENTITY CASCADE;"))
 
 
 @pytest.fixture(scope="function")
 async def db_session(setup_db_schema) -> AsyncGenerator[AsyncSession]:
-    async with db_manager.session_factory.begin() as session:
+    async with postgres_manager.session_factory.begin() as session:
         try:
             yield session
         finally:
@@ -35,36 +42,25 @@ async def db_session(setup_db_schema) -> AsyncGenerator[AsyncSession]:
 
 
 @pytest.fixture(scope="function")
-async def anonim_client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient]:
-    """
-    Yields:
-        AsyncClient: Non-authenticated client
-    """
-    app.dependency_overrides[db_manager.get_session] = lambda: db_session
+async def client(
+    monkeypatch: pytest.MonkeyPatch,
+    db_session: AsyncSession,
+) -> AsyncGenerator[AsyncClient]:
+    async def patched_aenter(self):  # noqa: RUF029
+        self._postgres_session = db_session
+        return self
+
+    async def patched_aexit(*args, **kwargs):
+        pass
+
+    monkeypatch.setattr(core.UnitOfWork, "__aenter__", patched_aenter)
+    monkeypatch.setattr(core.UnitOfWork, "__aexit__", patched_aexit)
 
     async with AsyncClient(
         transport=ASGITransport(app=app),
         base_url="http://test/api/v1",
     ) as client:
         yield client
-
-    app.dependency_overrides = {}
-
-
-@pytest.fixture(scope="function")
-def user_client(anonim_client: AsyncClient, user: models.User) -> AsyncClient:
-    app.dependency_overrides[dependencies.get_current_user] = (
-        lambda: schemas.UserRead.model_validate(user)
-    )
-    return anonim_client
-
-
-@pytest.fixture(scope="function")
-def admin_client(anonim_client: AsyncClient, admin_user: models.User) -> AsyncClient:
-    app.dependency_overrides[dependencies.get_current_user] = (
-        lambda: schemas.UserRead.model_validate(admin_user)
-    )
-    return anonim_client
 
 
 @pytest.fixture(scope="function")
@@ -89,3 +85,19 @@ async def admin_user(db_session: AsyncSession) -> models.User:
     db_session.add(admin)
     await db_session.flush()
     return admin
+
+
+@pytest.fixture(scope="function")
+def user_client(anonim_client: AsyncClient, user: models.User) -> AsyncClient:
+    app.dependency_overrides[dependencies.get_current_user] = (
+        lambda: schemas.users.Read.model_validate(user)
+    )
+    return anonim_client
+
+
+@pytest.fixture(scope="function")
+def admin_client(anonim_client: AsyncClient, admin_user: models.User) -> AsyncClient:
+    app.dependency_overrides[dependencies.get_current_user] = (
+        lambda: schemas.users.Read.model_validate(admin_user)
+    )
+    return anonim_client

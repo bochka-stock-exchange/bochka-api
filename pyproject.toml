@@ -9,8 +9,10 @@ dependencies = [
     "asyncpg>=0.30.0",
     "fastapi[standard]>=0.115.11",
     "greenlet>=3.1.1",
+    "hypercorn>=0.17.3",
     "orjson>=3.10.16",
     "pydantic-settings>=2.8.1",
+    "python-json-logger>=3.3.0",
     "sqlalchemy>=2.0.38",
     "uuid-v7>=1.0.0",
     "uvicorn>=0.34.0",
@@ -27,10 +29,10 @@ dev = [
 ]
 
 [tool.ruff]
-# Set the maximum line length to 100.
-line-length = 100
+# Set the maximum line length to 99.
+line-length = 99
 
-# Assume Python 3.11
+# Assume Python 3.13
 target-version = "py313"
 
 # Exclude a variety of commonly ignored directories.
@@ -116,14 +118,16 @@ ignore = [
     "S101",
     "COM812",
     "N802",
-    "TRY003",
     "TRY300",
     "S105",
     "PT003",
     "ARG001",
     "ISC001",
+    "PLR0913",
+    "PLR0917",
     "EM101",
-    "EM102"
+    "EM102",
+    "TRY003"
 ]
 
 # Allow fix for all enabled rules (when `--fix`) is provided.

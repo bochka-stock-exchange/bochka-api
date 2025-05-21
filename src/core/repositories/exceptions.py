@@ -1,31 +1,4 @@
-class ServiceError(Exception):
-    """Base exception class for service errors."""
-
-
-class EntityNotFoundError(ServiceError):
-    """Raised when an entity cannot be found for a given operation, such as update or delete."""
-
-    def __init__(self, service_name: str, identifier: str):
-        super().__init__(
-            f"{service_name} service failed to find entity with requested identifier ({identifier})"  # noqa: E501
-        )
-
-
-class PermissionDeniedError(ServiceError):  # 403
-    """Raised when an action is forbidden for the user."""
-
-    def __init__(self, message: str, service_name: str | None = None):
-        msg = f"Forbidden. Detail: {message}" + (
-            f" in {service_name} service" if service_name else ""
-        )
-        super().__init__(msg)
-
-
-class AuthenticationError(ServiceError):  # 401
-    """Invalid/missing credentials"""
-
-    def __init__(self, message: str):
-        super().__init__(f"Authentication failed. Detail: {message}")
+from src.core import custom_types
 
 
 class RepositoryError(Exception):
@@ -53,7 +26,7 @@ class DuplicateError(RepositoryError):
 
     def __init__(self, repo_name: str, table_name: str, message: str):
         super().__init__(
-            f"Duplicate entry in {repo_name} repository for table '{table_name}'. Detail{message}"
+            f"Duplicate entry in {repo_name} repository, table '{table_name}'. Detail: {message}"
         )
 
 
@@ -64,7 +37,7 @@ class EntityReadError(RepositoryError):
         self,
         repo_name: str,
         table_name: str,
-        identifier: int | str,
+        identifier: custom_types.EntityID,
         message: str,
     ):
         super().__init__(
@@ -80,7 +53,7 @@ class EntityUpdateError(RepositoryError):
         self,
         repo_name: str,
         table_name: str,
-        identifier: int | str,
+        identifier: custom_types.EntityID,
         message: str,
     ):
         super().__init__(
@@ -96,7 +69,7 @@ class EntityDeleteError(RepositoryError):
         self,
         repo_name: str,
         table_name: str,
-        identifier: int | str,
+        identifier: custom_types.EntityID,
         message: str,
     ):
         super().__init__(

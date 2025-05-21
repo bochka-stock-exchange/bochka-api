@@ -1,5 +1,3 @@
-from .base import Base
+from . import sqlalchemy
 
-__all__ = [
-    "Base",
-]
+__all__ = ["sqlalchemy"]

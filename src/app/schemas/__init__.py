@@ -1,11 +1,6 @@
-from .instruments import InstrumentBase, InstrumentCreate, InstrumentRead
-from .users import UserBase, UserCreate, UserRead
+from . import instruments, users
 
 __all__ = [
-    "InstrumentBase",
-    "InstrumentCreate",
-    "InstrumentRead",
-    "UserBase",
-    "UserCreate",
-    "UserRead",
+    "instruments",
+    "users",
 ]

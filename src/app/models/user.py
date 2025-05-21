@@ -19,7 +19,7 @@ class UserRole(enum.StrEnum):
     ADMIN = getattr(settings, "ADMIN_ROLE", "ADMIN")
 
 
-class User(core.models.Base):
+class User(core.models.sqlalchemy.Base, core.models.sqlalchemy.SoftDelete):
     __tablename__ = "users"
     repr_cols = ("id", "name", "role")
 
