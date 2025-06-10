@@ -17,7 +17,7 @@ class EntityCreateError(RepositoryError):
 
     def __init__(self, repo_name: str, table_name: str, message: str):
         super().__init__(
-            f"{repo_name} repository failed to create entity in '{table_name}'. Detail: {message}"
+            f"{repo_name} repository failed to create entity in '{table_name}'. Detail: {message}",
         )
 
 
@@ -26,7 +26,7 @@ class DuplicateError(RepositoryError):
 
     def __init__(self, repo_name: str, table_name: str, message: str):
         super().__init__(
-            f"Duplicate entry in {repo_name} repository, table '{table_name}'. Detail: {message}"
+            f"Duplicate entry in {repo_name} repository, table '{table_name}'. Detail: {message}",
         )
 
 

@@ -22,11 +22,10 @@ async def test_create_instrument_success(
     assert "detail" not in json_response
     assert json_response.get("success")
 
-    result = await db_session.scalars(select(Instrument))
+    result = (await db_session.scalars(select(Instrument))).all()
 
-    res = result.all()
-    assert len(res) == 1
-    instr = res[0]
+    assert len(result) == 1
+    instr = result[0]
     assert isinstance(instr, Instrument)
     assert instr.ticker == "USD"
     assert instr.name == "Доллар США"
@@ -75,7 +74,6 @@ async def test_delete_instrument_failed_404(
 
 
 async def test_delete_instrument_failed_403(
-    db_session: AsyncSession,
     user_client: AsyncClient,
 ):
     ticker = "FAKE"

@@ -2,7 +2,7 @@ import enum
 from datetime import datetime
 from typing import Annotated
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 
 class BaseFilters(BaseModel):
@@ -42,18 +42,25 @@ class BaseFilters(BaseModel):
                     try:
                         if to_value < from_value:
                             raise ValueError(
-                                f"'{to_field}' must be greater than or equal to '{field_name}'"
+                                f"'{to_field}' must be greater than or equal to '{field_name}'",
                             )
                     except TypeError:
                         raise ValueError(
-                            f"Types of '{field_name}' and '{to_field}' do not support comparison"
+                            f"Types of '{field_name}' and '{to_field}' do not support comparison",
                         ) from None
         return self
 
 
 class PaginationParams(BaseModel):
     page: Annotated[int, Field(ge=1)] = 1
-    limit: Annotated[int, Field(ge=1, le=1000)] = 10
+    limit: Annotated[int, Field(ge=0, le=1000)] = 10
+
+    @field_validator("limit", mode="after")
+    @classmethod
+    def validate_limit(cls, value: int):
+        if value == 0:
+            return float("inf")
+        return value
 
 
 class SortOrderField(enum.StrEnum):

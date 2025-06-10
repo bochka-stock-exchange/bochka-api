@@ -12,7 +12,8 @@ def test_validate_range_fields_match_success():
         test_to: datetime | None = None
 
     ValidFilters(
-        test_from=datetime(2025, 1, 1, tzinfo=UTC), test_to=datetime(2025, 1, 2, tzinfo=UTC)
+        test_from=datetime(2025, 1, 1, tzinfo=UTC),
+        test_to=datetime(2025, 1, 2, tzinfo=UTC),
     )
 
 
@@ -33,7 +34,8 @@ def test_validate_ranges_with_valid_dates():
         start_to: datetime | None = None
 
     DateFilters(
-        start_from=datetime(2025, 1, 1, tzinfo=UTC), start_to=datetime(2025, 1, 2, tzinfo=UTC)
+        start_from=datetime(2025, 1, 1, tzinfo=UTC),
+        start_to=datetime(2025, 1, 2, tzinfo=UTC),
     )
 
     same_date = datetime(2025, 1, 1, tzinfo=UTC)

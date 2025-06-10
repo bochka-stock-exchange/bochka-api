@@ -14,5 +14,7 @@ class LoggerSettings(BaseSettings):
     BACKUP_COUNT: int = 5
 
     model_config = SettingsConfigDict(
-        env_file=settings.env_config.ENV_FILE_PATH, extra="ignore", env_prefix="LOGGER_"
+        env_file=settings.env_config.ENV_FILE_PATH,
+        extra="ignore",
+        env_prefix="LOGGER_",
     )

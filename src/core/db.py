@@ -1,6 +1,3 @@
-import logging
-from typing import TypeVar
-
 from sqlalchemy import AsyncAdaptedQueuePool
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
@@ -10,10 +7,6 @@ from sqlalchemy.ext.asyncio import (
 )
 
 from src.core import config, utils
-
-logger = logging.getLogger(__name__)
-
-T = TypeVar("T")
 
 settings = config.get_settings()
 
@@ -30,12 +23,16 @@ class PostgresManager:
             settings.POSTGRES.URL,
             poolclass=AsyncAdaptedQueuePool,
             pool_recycle=300,
+            pool_size=15,
             isolation_level="SERIALIZABLE",
         )
 
     def _create_session_factory(self) -> async_sessionmaker[AsyncSession]:
         return async_sessionmaker(
-            bind=self.engine, class_=AsyncSession, expire_on_commit=False, autobegin=False
+            bind=self.engine,
+            class_=AsyncSession,
+            expire_on_commit=False,
+            autobegin=False,
         )
 
     async def get_session(self) -> AsyncSession:

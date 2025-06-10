@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
 
 from src import core
-from src.app import api
+from src.app import api, error_handlers
 
 settings = core.config.get_settings()
 
@@ -25,7 +25,7 @@ def create_app() -> FastAPI:
     core.middlewares.register_middlewares(app)
 
     core.error_handlers.register_error_handlers(app)
-    api.dependencies.error_handlers.register_error_handlers(app)
+    error_handlers.register_error_handlers(app)
 
     app.include_router(api.v1.router, prefix=settings.API_PREFIX)
 

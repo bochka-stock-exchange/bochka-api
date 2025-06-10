@@ -1,7 +1,7 @@
 import enum
 from typing import TYPE_CHECKING
 
-from sqlalchemy import UUID, CheckConstraint, ForeignKey
+from sqlalchemy import CheckConstraint, ForeignKey, Uuid
 from sqlalchemy import Enum as SQLAlchemyEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from uuid_v7.base import uuid7
@@ -32,11 +32,11 @@ class Direction(enum.StrEnum):
 
 class Order(core.models.sqlalchemy.Base, core.models.sqlalchemy.SoftDelete):
     __tablename__ = "orders"
-    repr_cols = ("id", "user_id", "ticker")
+    repr_cols = ("id", "user_id", "status", "direction", "qty", "price", "order_type", "filled")
 
-    id: Mapped[UUID] = mapped_column(UUID, primary_key=True, default=uuid7)
-    user_id: Mapped[UUID] = mapped_column(
-        UUID,
+    id: Mapped[Uuid] = mapped_column(Uuid, primary_key=True, default=uuid7)
+    user_id: Mapped[Uuid] = mapped_column(
+        Uuid,
         ForeignKey("users.id"),
     )
     status: Mapped[OrderStatus] = mapped_column(
@@ -52,10 +52,10 @@ class Order(core.models.sqlalchemy.Base, core.models.sqlalchemy.SoftDelete):
             Direction,
             name="orderdirection",
             values_callable=lambda enum_class: [member.value for member in enum_class],
-        )
+        ),
     )
 
-    instrument_id: Mapped[UUID] = mapped_column(UUID, ForeignKey("instruments.id"))
+    instrument_id: Mapped[Uuid] = mapped_column(Uuid, ForeignKey("instruments.id"))
 
     qty: Mapped[int]
     price: Mapped[int | None] = mapped_column(default=None)
@@ -65,7 +65,7 @@ class Order(core.models.sqlalchemy.Base, core.models.sqlalchemy.SoftDelete):
             OrderType,
             name="ordertype",
             values_callable=lambda enum_class: [member.value for member in enum_class],
-        )
+        ),
     )
 
     locked_money_amount: Mapped[int | None] = mapped_column(default=None)
@@ -75,7 +75,9 @@ class Order(core.models.sqlalchemy.Base, core.models.sqlalchemy.SoftDelete):
 
     user: Mapped["User"] = relationship("User", back_populates="orders")
     instrument: Mapped["Instrument"] = relationship(
-        "Instrument", back_populates="orders", lazy="selectin"
+        "Instrument",
+        back_populates="orders",
+        lazy="selectin",
     )
 
     __table_args__ = (
@@ -89,27 +91,20 @@ class Order(core.models.sqlalchemy.Base, core.models.sqlalchemy.SoftDelete):
             name="check_price_for_order_type",
         ),
         CheckConstraint(
-            "(direction = 'BUY' "
-            "AND locked_money_amount IS NOT NULL AND locked_instrument_amount IS NULL) "
-            "OR "
-            "(direction = 'SELL' "
-            "AND locked_instrument_amount IS NOT NULL AND locked_money_amount IS NULL)",
+            """
+                (
+                    order_type = 'MARKET' AND
+                    locked_money_amount IS NULL AND
+                    locked_instrument_amount IS NULL
+                ) OR (
+                    order_type = 'LIMIT' AND (
+                        (direction = 'BUY' AND
+                        locked_money_amount IS NOT NULL AND locked_instrument_amount IS NULL) OR
+                        (direction = 'SELL' AND
+                        locked_instrument_amount IS NOT NULL AND locked_money_amount IS NULL)
+                    )
+                )
+                """,
             name="check_lock_amounts",
         ),
     )
-
-
-class Transaction(core.models.sqlalchemy.Base):
-    __tablename__ = "transactions"
-    repr_cols = ("id", "ticker", "amount")
-    __table_args__ = (
-        CheckConstraint("amount > 0", name="check_transaction_amount_positive"),
-        CheckConstraint("price >= 0", name="check_price_transaction_non_negative"),
-    )
-
-    id: Mapped[UUID] = mapped_column(UUID, primary_key=True)
-    instrument_id: Mapped[UUID] = mapped_column(UUID, ForeignKey("instruments.id"))
-    amount: Mapped[int]
-    price: Mapped[int]
-
-    instrument: Mapped["Instrument"] = relationship("Instrument", back_populates="transactions")

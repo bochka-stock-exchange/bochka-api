@@ -129,7 +129,9 @@ ignore = [
     "PLR0917",
     "EM101",
     "EM102",
-    "TRY003"
+    "TRY003",
+    "PLR6301",
+    "ERA001"
 ]
 
 # Allow fix for all enabled rules (when `--fix`) is provided.
@@ -166,6 +168,9 @@ addopts = [
     "--strict-markers",
     "--strict-config",
     "-ra"
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
 ]
 testpaths = [
     "tests",

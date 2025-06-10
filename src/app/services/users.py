@@ -1,5 +1,12 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from src import core
 from src.app import models, repositories, schemas
+
+if TYPE_CHECKING:
+    from src.core.uow import UnitOfWork
 
 
 class Users(
@@ -10,7 +17,7 @@ class Users(
         schemas.users.Filters,
         schemas.users.SortParams,
         models.User,
-    ]
+    ],
 ):
     def __init__(self):
         self.repo = repositories.Users()
@@ -22,12 +29,26 @@ class Users(
             filters_schema=schemas.users.Filters,
         )
 
-    async def read_by_name(self, uow: core.UnitOfWork, name: str) -> schemas.users.Read:
+    async def read_by_name(self, uow: UnitOfWork, name: str) -> schemas.users.Read:
         user = await self.repo.read_by_name(uow, name)
 
         if not user:
             raise core.services.exceptions.EntityNotFoundError(
-                self.__class__.__name__, f"name={name}"
+                self.__class__.__name__,
+                f"name={name}",
             )
 
         return await self._validate_data(user)
+
+    async def get_or_create_user(
+        self,
+        uow: UnitOfWork,
+        user_data: schemas.users.Create,
+    ) -> schemas.users.Read:
+        try:
+            return await self.read_by_name(uow, user_data.name)
+        except core.services.exceptions.EntityNotFoundError:
+            return await self.create(
+                uow,
+                user_data,
+            )
