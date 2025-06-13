@@ -25,6 +25,8 @@ def create_app() -> FastAPI:
     core.middlewares.register_middlewares(app)
 
     core.error_handlers.register_error_handlers(app)
+    api.error_handlers.register_error_handlers(app)
+
     api.dependencies.error_handlers.register_error_handlers(app)
 
     app.include_router(api.v1.router, prefix=settings.API_PREFIX)

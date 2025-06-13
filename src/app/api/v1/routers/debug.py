@@ -27,26 +27,7 @@ async def get_profile_admin(
 
 @router.get("/users-all")
 async def get_all_users(
-    service: dependencies.services.Users,
+    users_service: dependencies.services.Users,
     uow: dependencies.uow.Postgres,
 ) -> list[schemas.users.Read]:
-    return await service.read_many(uow)
-
-
-@router.get("/balance-operations")
-async def get_all_balance_operations(
-    service: dependencies.services.BalanceOperations,
-    uow: dependencies.uow.Postgres,
-) -> list[schemas.balance_operations.Read]:
-    return await service.read_many(uow)
-
-
-@router.get("/user-balance-operations")
-async def get_user_balance_operations(
-    service: dependencies.services.BalanceOperations,
-    uow: dependencies.uow.Postgres,
-    current_user: dependencies.permissions.CurrentUser,
-) -> list[schemas.balance_operations.Read]:
-    return await service.read_many(
-        uow, filters=schemas.balance_operations.Filters(user_id=current_user.id)
-    )
+    return await users_service.read_many(uow)

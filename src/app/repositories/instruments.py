@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 
-from sqlalchemy import UUID, Row, select
+from sqlalchemy import Row, Uuid, select
 
 from src import core
 from src.app import models
@@ -11,7 +11,7 @@ class Instruments(core.repositories.sqlalchemy.BaseCRUD[models.Instrument]):
         super().__init__(models.Instrument)
 
     @staticmethod
-    async def get_all_instruments(uow: core.UnitOfWork) -> Sequence[Row[tuple[UUID, str]]]:
+    async def get_all_instruments(uow: core.UnitOfWork) -> Sequence[Row[tuple[Uuid, str]]]:
         session = uow.postgres_session
 
         instruments_query = select(models.Instrument.id, models.Instrument.ticker).where(

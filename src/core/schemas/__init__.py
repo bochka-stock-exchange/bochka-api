@@ -1,3 +1,3 @@
-from .filter import BaseFilters, PaginationParams, SortOrderField, SortParams
+from .filter import BaseFilters, PaginationParams, SortParams
 
-__all__ = ["BaseFilters", "PaginationParams", "SortOrderField", "SortParams"]
+__all__ = ["BaseFilters", "PaginationParams", "SortParams"]

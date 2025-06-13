@@ -18,7 +18,12 @@ class BaseCRUD[ModelType](ABC):
 
     @abstractmethod
     async def read_by_id(
-        self, uow: UnitOfWork, entity_id: Any, *, include_deleted: bool = False
+        self,
+        uow: UnitOfWork,
+        entity_id: Any,
+        *,
+        include_deleted: bool = False,
+        include_locked: bool = True,
     ) -> ModelType | None:
         raise NotImplementedError
 
@@ -32,6 +37,7 @@ class BaseCRUD[ModelType](ABC):
         limit: int = 10,
         *,
         include_deleted: bool = False,
+        include_locked: bool = True,
     ) -> Sequence[ModelType]:
         raise NotImplementedError
 

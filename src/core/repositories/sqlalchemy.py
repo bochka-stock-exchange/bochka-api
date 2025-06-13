@@ -1,15 +1,16 @@
 import logging
 from collections.abc import Sequence
 from typing import Any, ClassVar, TypeVar
+from xml.etree.ElementInclude import include
 
 from sqlalchemy import Select, and_, func, inspect, or_, select, update
 from sqlalchemy.exc import IntegrityError, OperationalError
 from sqlalchemy.orm import InstrumentedAttribute
 
-from src.core import custom_types, models, repositories, schemas
+from src.core import custom_types, models, repositories
 from src.core.uow import UnitOfWork
-from src.core.utils.decorators import log_operation, retry_on_serialization
-from src.core.utils.decorators.retry import is_serialization_failure
+from src.core.utils.decorators import log_operation
+from src.core.utils.decorators.retry import is_retryable_db_error
 
 SQLModelType = TypeVar("SQLModelType", bound=models.sqlalchemy.Base)
 
@@ -24,7 +25,6 @@ class BaseCRUD(repositories.abstract.BaseCRUD[SQLModelType]):
 
     search_fields: ClassVar[list[InstrumentedAttribute]] = []
 
-    @retry_on_serialization()
     @log_operation
     async def create(self, uow: UnitOfWork, data: dict) -> SQLModelType:
         try:
@@ -42,7 +42,7 @@ class BaseCRUD(repositories.abstract.BaseCRUD[SQLModelType]):
                 self.__class__.__name__, self.model.__tablename__, err_info
             ) from e
         except OperationalError as e:
-            if is_serialization_failure(e):
+            if is_retryable_db_error(e):
                 uow.postgres_session.expunge_all()
                 raise
             raise repositories.exceptions.DatabaseError(
@@ -57,7 +57,6 @@ class BaseCRUD(repositories.abstract.BaseCRUD[SQLModelType]):
 
         return instance
 
-    @retry_on_serialization()
     @log_operation
     async def create_many(self, uow: UnitOfWork, data_list: list[dict]) -> list[SQLModelType]:
         try:
@@ -85,11 +84,17 @@ class BaseCRUD(repositories.abstract.BaseCRUD[SQLModelType]):
 
     @log_operation
     async def read_by_id(
-        self, uow: UnitOfWork, entity_id: custom_types.EntityID, *, include_deleted: bool = False
+        self,
+        uow: UnitOfWork,
+        entity_id: custom_types.EntityID,
+        *,
+        include_deleted: bool = False,
+        include_locked: bool = True,
     ) -> SQLModelType | None:
         try:
             session = uow.postgres_session
             query = select(self.model)
+            query = query.with_for_update(skip_locked=not include_locked)
 
             pk_columns: tuple = inspect(self.model).primary_key
 
@@ -158,11 +163,13 @@ class BaseCRUD(repositories.abstract.BaseCRUD[SQLModelType]):
         limit: int = 10,
         *,
         include_deleted: bool = False,
+        include_locked: bool = True,
     ) -> Sequence[SQLModelType]:
         try:
             session = uow.postgres_session
 
             query = select(self.model)
+            query = query.with_for_update(skip_locked=not include_locked)
 
             if not include_deleted and issubclass(self.model, models.sqlalchemy.SoftDelete):
                 query = query.where(self.model.deleted_at.is_(None))
@@ -171,13 +178,9 @@ class BaseCRUD(repositories.abstract.BaseCRUD[SQLModelType]):
                 query = self._process_filters(query, filters)
 
             if sorting and (sort_by := sorting.get("sort_by")) is not None:
-                order_by = sorting.get("order_by", "asc")
+                ascending = sorting.get("ascending", True)
                 column = getattr(self.model, sort_by)
-                query = query.order_by(
-                    column.desc()
-                    if order_by == schemas.SortOrderField.DESCENDING
-                    else column.asc()
-                )
+                query = query.order_by(column.asc() if ascending else column.desc())
 
             query = query.offset((page - 1) * limit).limit(limit)
 
@@ -189,7 +192,6 @@ class BaseCRUD(repositories.abstract.BaseCRUD[SQLModelType]):
                 str(e),
             ) from e
 
-    @retry_on_serialization()
     @log_operation
     async def update_by_id(
         self,
@@ -204,7 +206,7 @@ class BaseCRUD(repositories.abstract.BaseCRUD[SQLModelType]):
                 for key, value in data.items():
                     setattr(instance, key, value)
                 await session.flush()
-                await session.refresh(instance)
+                await session.refresh(instance, with_for_update=True)
             else:
                 self.logger.warning("Update target not found", extra={"updated": False})
             return instance
@@ -216,7 +218,6 @@ class BaseCRUD(repositories.abstract.BaseCRUD[SQLModelType]):
                 str(e),
             ) from e
 
-    @retry_on_serialization()
     @log_operation
     async def delete_by_id(self, uow: UnitOfWork, entity_id: custom_types.EntityID) -> bool:
         try:

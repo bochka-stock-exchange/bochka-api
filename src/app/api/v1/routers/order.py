@@ -17,39 +17,50 @@ router = APIRouter(prefix="/order", tags=["order"])
 async def create_order(
     order_data: schemas.orders.Create,
     orders_service: dependencies.services.Orders,
-    instrument_service: dependencies.services.Instruments,
     current_user: dependencies.permissions.CurrentUser,
     uow: dependencies.uow.Postgres,
 ):
-    instrument = await instrument_service.read_by_ticker(uow, order_data.ticker)
-
     order = await orders_service.create(
         uow,
         order_data,
         additional_data={
-            "instrument_id": instrument.id,
             "user_id": current_user.id,
-            "status": "NEW" if hasattr(order_data, "price") else "EXECUTED",
-            "order_type": "LIMIT" if hasattr(order_data, "price") else "MARKET",
+            "order_type": "LIMIT" if order_data.price else "MARKET",
         },
     )
     return schemas.orders.CreateSuccess(order_id=order.id)
 
 
-@router.get("", dependencies=[Depends(dependencies.permissions.get_current_user)])
-async def get_my_orders():
-    raise NotImplementedError
+@router.get("", response_model=list[schemas.orders.LimitOrder | schemas.orders.MarketOrder])
+async def get_my_orders(
+    orders_service: dependencies.services.Orders,
+    uow: dependencies.uow.Postgres,
+    current_user: dependencies.permissions.CurrentUser,
+):
+    return [
+        schemas.orders.LimitOrder.model_validate(order)
+        if order.price
+        else schemas.orders.MarketOrder.model_validate(order)
+        for order in await orders_service.read_many(
+            uow, filters=schemas.orders.Filters(user_id=current_user.id)
+        )
+    ]
 
 
 @router.get(
     "/{order_id}",
     dependencies=[Depends(dependencies.permissions.get_current_user)],
-    response_model=schemas.orders.Read,
+    response_model=schemas.orders.LimitOrder | schemas.orders.MarketOrder,
 )
 async def get_order(
-    order_id: UUID, order_service: dependencies.services.Orders, uow: dependencies.uow.Postgres
+    order_id: UUID, orders_service: dependencies.services.Orders, uow: dependencies.uow.Postgres
 ):
-    return await order_service.read_by_id(uow, order_id)
+    order = await orders_service.read_by_id(uow, order_id)
+    return (
+        schemas.orders.LimitOrder.model_validate(order)
+        if order.price
+        else schemas.orders.MarketOrder.model_validate(order)
+    )
 
 
 @router.delete(
@@ -66,15 +77,17 @@ async def cancel_order(
     order = await orders_service.read_by_id(uow, order_id)
     if order.user_id != current_user.id:
         raise core.services.exceptions.PermissionDeniedError(
-            message="You dont have permission to cancel this order", service_name="Orders"
+            message="You dont have permission to cancel this order",
+            service_name="Orders",
+        )
+    if order.order_type == models.order.OrderType.MARKET or order.status in {
+        models.order.OrderStatus.EXECUTED,
+        models.order.OrderStatus.CANCELLED,
+    }:
+        raise core.services.exceptions.PermissionDeniedError(
+            message="Cant delete executed or market order"
         )
 
-    await orders_service.update_by_id(
-        uow, order_id, schemas.orders.Update(status=models.order.OrderStatus.CANCELLED)
-    )
-
-    # Since cancelled orders should not be released with all of them and cannot be restored,
-    # we delete them so as not to make additional status checks.
-    await orders_service.delete_by_id(uow, order_id)
+    await orders_service.cancel_order(uow, order_id)
 
     return schemas.orders.SuccessResponse()

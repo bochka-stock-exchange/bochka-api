@@ -2,13 +2,13 @@ import enum
 from typing import Annotated
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, RootModel
+from pydantic import BaseModel, ConfigDict, Field, RootModel, computed_field
 
 from src import core
 
 from . import instruments as instrument_schemas
 
-BalanceOperationAmount = Annotated[int, Field(gt=0)]
+BalanceOperationAmount = Annotated[int, Field(ge=0)]
 
 
 class Base(BaseModel):
@@ -22,11 +22,29 @@ class Create(Base):
 
 
 class Update(BaseModel):
-    amount: BalanceOperationAmount | None
+    amount: BalanceOperationAmount | None = None
+    locked_amount: BalanceOperationAmount | None = None
 
 
 class Read(Base):
+    locked_amount: BalanceOperationAmount
+
+    @computed_field
+    @property
+    def available_amount(self) -> BalanceOperationAmount:
+        return self.amount - self.locked_amount
+
     model_config = ConfigDict(from_attributes=True)
+
+
+class Operation(BaseModel):
+    user_id: UUID
+    amount: Annotated[int, Field(gt=0)]
+    ticker: instrument_schemas.Ticker
+
+
+class OperationSuccess(BaseModel):
+    success: bool = True
 
 
 class Filters(core.schemas.BaseFilters):

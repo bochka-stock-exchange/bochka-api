@@ -38,26 +38,15 @@ async def test_deposit_success_new_balance(
     assert balance is not None
     assert balance.amount == amount_test
 
-    # Check operation was created
-    operation = await db_session.scalar(
-        select(models.BalanceOperation).filter_by(
-            user_id=admin_user.id,
-            instrument_id=instrument.id,
-        )
-    )
-    assert operation is not None
-    assert operation.amount == amount_test
-    assert operation.operation_type == models.balance_operation.OperationType.DEPOSIT
-
 
 async def test_deposit_success_existing_balance(
     db_session: AsyncSession,
     admin_client: AsyncClient,
     admin_user: models.User,
     instrument: models.Instrument,
-    balance: models.Balance,
+    admin_balance: models.Balance,
 ):
-    initial_amount = balance.amount
+    initial_amount = admin_balance.amount
     deposit_amount = 500
 
     deposit_data = {
@@ -72,17 +61,7 @@ async def test_deposit_success_existing_balance(
     assert "detail" not in json_response
     assert json_response["success"]
 
-    assert balance.amount == initial_amount + deposit_amount
-
-    # Check operation was created
-    operation = await db_session.scalar(
-        select(models.BalanceOperation).filter_by(
-            user_id=admin_user.id,
-            instrument_id=instrument.id,
-            amount=deposit_amount,
-        )
-    )
-    assert operation is not None
+    assert admin_balance.amount == initial_amount + deposit_amount
 
 
 async def test_deposit_failed_user_not_found(
@@ -190,16 +169,6 @@ async def test_admin_can_deposit_to_user(
     )
     assert balance is not None
     assert balance.amount == amount_test
-
-    operation = await db_session.scalar(
-        select(models.BalanceOperation).filter_by(
-            user_id=user.id,
-            instrument_id=instrument.id,
-        )
-    )
-    assert operation is not None
-    assert operation.amount == amount_test
-    assert operation.operation_type == models.balance_operation.OperationType.DEPOSIT
 
 
 async def test_user_cannot_deposit_to_admin(

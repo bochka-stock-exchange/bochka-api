@@ -1,4 +1,3 @@
-import enum
 from datetime import datetime
 from typing import Annotated
 
@@ -56,10 +55,5 @@ class PaginationParams(BaseModel):
     limit: Annotated[int, Field(ge=1, le=1000)] = 10
 
 
-class SortOrderField(enum.StrEnum):
-    ASCENDING = "asc"
-    DESCENDING = "desc"
-
-
 class SortParams(BaseModel):
-    order_by: SortOrderField = SortOrderField.ASCENDING
+    ascending: bool = True

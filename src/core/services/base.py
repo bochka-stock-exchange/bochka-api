@@ -6,6 +6,8 @@ from pydantic import BaseModel
 from src.core import custom_types, repositories, schemas, services
 from src.core.uow import UnitOfWork
 from src.core.utils.decorators import log_operation
+from src.core.utils.decorators.retry import is_retryable_db_error
+from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
 
 TCreate = TypeVar("TCreate", bound=BaseModel)
 TRead = TypeVar("TRead", bound=BaseModel)
@@ -64,9 +66,16 @@ class BaseCRUD[
 
     @log_operation
     async def read_by_id(
-        self, uow: UnitOfWork, entity_id: custom_types.EntityID, *, include_deleted: bool = False
+        self,
+        uow: UnitOfWork,
+        entity_id: custom_types.EntityID,
+        *,
+        include_deleted: bool = False,
+        include_locked: bool = True,
     ) -> TRead:
-        entity = await self.repo.read_by_id(uow, entity_id, include_deleted=include_deleted)
+        entity = await self.repo.read_by_id(
+            uow, entity_id, include_deleted=include_deleted, include_locked=include_locked
+        )
         if not entity:
             raise services.exceptions.EntityNotFoundError(
                 self.__class__.__name__,
@@ -84,6 +93,7 @@ class BaseCRUD[
         pagination: schemas.PaginationParams | None = None,
         *,
         include_deleted: bool = False,
+        include_locked: bool = True,
     ) -> list[TRead]:
         sorting_data = sorting.model_dump(exclude_none=True) if sorting else None
         filters_data = filters.model_dump(exclude_none=True) if filters else None
@@ -91,7 +101,13 @@ class BaseCRUD[
         page, limit = (pagination.page, pagination.limit) if pagination else (1, 10)
 
         entities = await self.repo.read_many(
-            uow, filters_data, sorting_data, page, limit, include_deleted=include_deleted
+            uow,
+            filters_data,
+            sorting_data,
+            page,
+            limit,
+            include_deleted=include_deleted,
+            include_locked=include_locked,
         )
 
         return [await self._validate_data(entity) for entity in entities]

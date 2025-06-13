@@ -1,5 +1,5 @@
 from .log_operation import log_operation
-from .retry import retry_on_serialization
+from .retry import is_retryable_db_error
 from .singleton import Singleton
 
-__all__ = ["Singleton", "log_operation", "retry_on_serialization"]
+__all__ = ["Singleton", "log_operation", "is_retryable_db_error"]

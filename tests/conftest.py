@@ -1,9 +1,13 @@
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Callable, Iterator
+from dataclasses import dataclass
+from typing import TypeVar
+from uuid import UUID
 
 import pytest
 from fastapi.testclient import TestClient
 from httpx import ASGITransport, AsyncClient
-from sqlalchemy import text
+from pydantic import validate_call
+from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import src.app
@@ -13,6 +17,8 @@ from src.app.api import dependencies
 from src.main import app
 
 postgres_manager = core.db.get_postgres_manager()
+
+SQLModelType = TypeVar("SQLModelType", bound=core.models.sqlalchemy.Base)
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -64,28 +70,23 @@ async def client(mock_uow: None) -> AsyncGenerator[AsyncClient]:
     app.dependency_overrides = {}
 
 
+async def create_in_db[SQLModelType](session: AsyncSession, entity: SQLModelType) -> SQLModelType:
+    session.add(entity)
+    await session.flush()
+    await session.refresh(entity)
+    return entity
+
+
 @pytest.fixture(scope="function")
 async def user(db_session: AsyncSession) -> models.User:
-    user = models.User(
-        name="User",
-        role=models.UserRole.USER,
-    )
-    db_session.add(user)
-    await db_session.flush()
-    await db_session.refresh(user)
-    return user
+    return await create_in_db(db_session, models.User(name="User", role=models.UserRole.USER))
 
 
 @pytest.fixture(scope="function")
 async def admin_user(db_session: AsyncSession) -> models.User:
-    admin = models.User(
-        name="Admin User",
-        role=models.UserRole.ADMIN,
+    return await create_in_db(
+        db_session, models.User(name="Admin User", role=models.UserRole.ADMIN)
     )
-    db_session.add(admin)
-    await db_session.flush()
-    await db_session.refresh(admin)
-    return admin
 
 
 @pytest.fixture(scope="function")
@@ -106,26 +107,118 @@ def admin_client(client: AsyncClient, admin_user: models.User) -> AsyncClient:
 
 @pytest.fixture(scope="function")
 async def instrument(db_session: AsyncSession) -> models.Instrument:
-    instrument = models.Instrument(
-        ticker="BB",
-        name="Bobrito Bandito",
-    )
-    db_session.add(instrument)
-    await db_session.flush()
-    await db_session.refresh(instrument)
-    return instrument
+    return await create_in_db(db_session, models.Instrument(ticker="BB", name="Bobrito Bandito"))
 
 
 @pytest.fixture(scope="function")
-async def balance(
+async def rub_instrument(db_session: AsyncSession) -> models.Instrument:
+    return await create_in_db(db_session, models.Instrument(ticker="RUB", name="Rubles"))
+
+
+@pytest.fixture(scope="function")
+async def admin_balance(
     db_session: AsyncSession, admin_user: models.User, instrument: models.Instrument
 ) -> models.Balance:
-    balance = models.Balance(
-        user_id=admin_user.id,
-        instrument_id=instrument.id,
-        amount=1000,
+    return await create_in_db(
+        db_session, models.Balance(user_id=admin_user.id, instrument_id=instrument.id, amount=1000)
     )
-    db_session.add(balance)
-    await db_session.flush()
-    await db_session.refresh(balance)
-    return balance
+
+
+@pytest.fixture(scope="function")
+async def admin_rub_balance(
+    db_session: AsyncSession, admin_user: models.User, rub_instrument: models.Instrument
+) -> models.Balance:
+    return await create_in_db(
+        db_session,
+        models.Balance(user_id=admin_user.id, instrument_id=rub_instrument.id, amount=1000),
+    )
+
+
+@pytest.fixture(scope="function")
+async def user_balance(
+    db_session: AsyncSession, user: models.User, instrument: models.Instrument
+) -> models.Balance:
+    return await create_in_db(
+        db_session, models.Balance(user_id=user.id, instrument_id=instrument.id, amount=1000)
+    )
+
+
+@pytest.fixture(scope="function")
+async def user_rub_balance(
+    db_session: AsyncSession, user: models.User, rub_instrument: models.Instrument
+) -> models.Balance:
+    return await create_in_db(
+        db_session,
+        models.Balance(user_id=user.id, instrument_id=rub_instrument.id, amount=1000),
+    )
+
+
+@dataclass
+class AllBalances:
+    user_balance: models.Balance
+    user_rub_balance: models.Balance
+    admin_balance: models.Balance
+    admin_rub_balance: models.Balance
+
+    def __iter__(self) -> Iterator[models.Balance]:
+        yield self.user_balance
+        yield self.user_rub_balance
+        yield self.admin_balance
+        yield self.admin_rub_balance
+
+
+@pytest.fixture(scope="function")
+def all_balances(
+    user_balance: models.Balance,
+    user_rub_balance: models.Balance,
+    admin_balance: models.Balance,
+    admin_rub_balance: models.Balance,
+) -> AllBalances:
+    return AllBalances(
+        user_balance=user_balance,
+        user_rub_balance=user_rub_balance,
+        admin_balance=admin_balance,
+        admin_rub_balance=admin_rub_balance,
+    )
+
+
+@pytest.fixture(scope="function")
+def create_order(db_session: AsyncSession, rub_instrument: models.Instrument) -> Callable:
+    @validate_call
+    async def _create_order(
+        user_id: UUID,
+        instrument_id: UUID,
+        status: models.order.OrderStatus,
+        direction: models.order.Direction,
+        qty: schemas.orders.OrderQuantity,
+        price: schemas.orders.LimitOrderPrice | None = None,
+    ) -> models.Order:
+        params = dict(locals())
+
+        params.pop("db_session", None)
+        params.pop("rub_instrument", None)
+
+        is_limit = price is not None
+
+        order = models.Order(
+            **params,
+            locked_amount=qty * price
+            if direction == models.order.Direction.BUY and price
+            else qty,
+            order_type=models.order.OrderType.LIMIT if is_limit else models.order.OrderType.MARKET,
+        )
+
+        balance_query = await db_session.execute(
+            select(models.Balance).filter_by(user_id=user_id, instrument_id=instrument_id)
+        )
+
+        balance = balance_query.scalar_one()
+
+        balance.locked_amount += order.locked_amount
+
+        await db_session.flush()
+        await db_session.refresh(balance)
+
+        return await create_in_db(db_session, order)
+
+    return _create_order

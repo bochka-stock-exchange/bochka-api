@@ -1,4 +1,5 @@
 import logging
+from multiprocessing import pool
 from typing import TypeVar
 
 from sqlalchemy import AsyncAdaptedQueuePool
@@ -30,12 +31,18 @@ class PostgresManager:
             settings.POSTGRES.URL,
             poolclass=AsyncAdaptedQueuePool,
             pool_recycle=300,
-            isolation_level="SERIALIZABLE",
+            pool_size=15,
+            isolation_level="READ COMMITTED",
+            connect_args={"command_timeout": 100},
         )
 
     def _create_session_factory(self) -> async_sessionmaker[AsyncSession]:
         return async_sessionmaker(
-            bind=self.engine, class_=AsyncSession, expire_on_commit=False, autobegin=False
+            bind=self.engine,
+            class_=AsyncSession,
+            expire_on_commit=True,
+            autobegin=False,
+            autoflush=False,
         )
 
     async def get_session(self) -> AsyncSession:
