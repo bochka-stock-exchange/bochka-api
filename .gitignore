@@ -169,3 +169,20 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+pgdata/
+mongodata/
+minio/
+redisdata/
+
+.ruff_cache/
+.DS_store
+
+mongodb.key
+
+.vscode
+*.code-workspace
+
+data/
+tests_data/
+tests.env

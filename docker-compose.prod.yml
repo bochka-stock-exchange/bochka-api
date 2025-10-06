@@ -1,0 +1,88 @@
+version: '3.8'
+
+services:
+  app:
+    image: ${YCR_IMAGE_ID}  # Берем из .env
+    ports:
+      - target: 8000
+        published: 8000
+        protocol: tcp
+        mode: host
+    volumes:
+      - .:/src
+    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+    deploy:
+      placement:
+        constraints:
+          - "node.labels.TAG==prod"
+      replicas: 1
+      update_config:
+        parallelism: 1
+        order: start-first
+        failure_action: rollback
+        delay: 15s
+      rollback_config:
+        parallelism: 0
+        order: stop-first
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    healthcheck:
+      test: curl -sS http://127.0.0.1:8000/api/v1/public/healthcheck || echo 1
+      interval: 30s
+      timeout: 3s
+      retries: 12
+
+  db:
+    image: postgres:17-alpine
+    env_file: .env
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata-volume:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-q", "-d", "$POSTGRES_DB", "-U", "$POSTGRES_USER" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    deploy:
+      placement:
+        constraints:
+          - "node.labels.TAG==prod"
+      replicas: 1
+      update_config:
+        parallelism: 1
+        order: start-first
+        failure_action: rollback
+        delay: 15s
+      rollback_config:
+        parallelism: 0
+        order: stop-first
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+
+  watchtower:
+    image: containrrr/watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: --interval 30 --label-enable --cleanup --monitor-only app
+    deploy:
+      placement:
+        constraints:
+          - "node.labels.TAG==prod"
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+
+volumes:
+  pgdata-volume:

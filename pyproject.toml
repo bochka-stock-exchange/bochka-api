@@ -5,29 +5,160 @@ description = "Stock exchange API"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "fastapi[standard]>=0.115.11",
-    "pydantic-settings>=2.8.1",
+    "alembic>=1.15.2",
+    "asyncpg>=0.30.0",
+    "fastapi[standard]>=0.115.12",
+    "greenlet>=3.2.2",
+    "hypercorn>=0.17.3",
+    "orjson>=3.10.18",
+    "pydantic-settings>=2.9.1",
+    "python-jose>=3.4.0",
+    "python-json-logger>=3.3.0",
+    "sqlalchemy>=2.0.41",
+    "tenacity>=9.1.2",
+    "uuid-v7>=1.0.0",
+    "uvicorn>=0.34.2",
 ]
 
 [dependency-groups]
 dev = [
-    "pre-commit>=4.1.0",
-    "pyright>=1.1.396",
+    "pre-commit>=4.2.0",
+    "pyright[nodejs]>=1.1.401",
     "pytest>=8.3.5",
-    "pytest-asyncio>=0.25.3",
-    "pytest-cov>=6.0.0",
-    "ruff>=0.9.9",
+    "pytest-asyncio>=0.26.0",
+    "pytest-cov>=6.1.1",
+    "ruff>=0.11.10",
 ]
 
 [tool.ruff]
-# Set the maximum line length to 79.
-line-length = 79
+# Set the maximum line length to 99.
+line-length = 99
+
+# Assume Python 3.13
+target-version = "py313"
+
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    "alembic",
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "venv",
+]
 
 [tool.ruff.lint]
-# Add the `line-too-long` rule to the enforced rule set. By default, Ruff omits rules that
-# overlap with the use of a formatter, like Black, but we can override this behavior by
-# explicitly adding the rule.
-extend-select = ["E501"]
+preview = true
+# Enable Pyflakes (`F`) and a subset of the pycodestyle (`E`)  codes by default.
+# Unlike Flake8, Ruff doesn't enable pycodestyle warnings (`W`) or
+# McCabe complexity (`C901`) by default.
+select = [
+    "E",
+    "F",
+    "I",
+    "C",
+    "B",
+    "W",
+    "ERA",
+    "FAST", # FastAPI lint
+    "ASYNC",
+    "S",
+    "BLE",
+    "FBT",
+    "A",
+    "COM",
+    "DTZ",
+    "T10",
+    "EM",
+    "FIX",
+    "FA",
+    "ISC",
+    "ICN",
+    "LOG",
+    "G",
+    "INP",
+    "PIE",
+    "T20",
+    "PYI",
+    "PT",
+    "Q",
+    "RSE",
+    "RET",
+    "SLF",
+    "SIM",
+    "TID",
+    "TD",
+    "ARG",
+    "PTH",
+    "FLY",
+    "C90",
+    "N",
+    "PERF",
+    "DOC",
+    "PGH",
+    "PL",
+    "UP",
+    "RUF",
+    "TRY"
+]
+ignore = [
+    "C408",
+    "S101",
+    "COM812",
+    "N802",
+    "TRY300",
+    "S105",
+    "PT003",
+    "ARG001",
+    "ISC001",
+    "PLR0913",
+    "PLR0917",
+    "EM101",
+    "EM102",
+    "TRY003"
+]
+
+# Allow fix for all enabled rules (when `--fix`) is provided.
+fixable = ["ALL"]
+unfixable = []
+
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[tool.ruff.lint.mccabe]
+# Unlike Flake8, default to a complexity level of 10.
+max-complexity = 10
+
+[tool.ruff.lint.isort]
+known-third-party = ["fastapi", "pydantic", "starlette"]
+
+[tool.ruff.format]
+preview = true
+# Like Black, use double quotes for strings.
+quote-style = "double"
+
+# Like Black, indent with spaces, rather than tabs.
+indent-style = "space"
+
+# Like Black, respect magic trailing commas.
+skip-magic-trailing-comma = false
+
+# Like Black, automatically detect the appropriate line ending.
+line-ending = "auto"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
@@ -45,3 +176,8 @@ pythonpath = [
 ]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "session"
+
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
+ignore = ["alembic/versions/**"]
