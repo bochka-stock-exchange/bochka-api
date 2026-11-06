@@ -1,90 +1,35 @@
-# 📈 bochka-api - Educational Stock Market Simulation
+# Бочка — учебная биржа
 
-[![Checked with pyright](https://microsoft.github.io/pyright/img/pyright_badge.svg)](https://microsoft.github.io/pyright/)
-[![Dockerized](https://img.shields.io/badge/Docker-Supported-blue)](https://www.docker.com/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
-[![Educational Project](https://img.shields.io/badge/Status-Educational-orange)](https://github.com/your-repo)
-![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/bochka-stock-exchange/bochka-api?utm_source=oss&utm_medium=github&utm_campaign=bochka-stock-exchange%2Fbochka-api&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
+Проект моделирует торговлю заявками. В репозитории сохранён исходный сервис на FastAPI и PostgreSQL (`src/`, `alembic/`, `tests/`). Для практики 1 курса «Программная инженерия» подготовлена **самостоятельная версия с браузерным интерфейсом** в [`p1/`](p1/README.md). Она использует ту же предметную область и основные правила торгов, запускается без базы данных и внешних зависимостей.
 
-## 🎯 About the Project
-🚀 **bochka-api** is a stock market simulation API built for educational purposes. It allows users to trade financial instruments in a sandboxed environment. This project is **not intended for real-world financial applications** and should not be used for actual trading.
+## Как проверить за минуту
 
-The system models key aspects of a stock exchange:
-- 📊 Order execution mechanisms
-- 💰 Balance management for users
-- 💹 Exchange commission handling
-- ⏳ Trading session control
+Нужен Python 3.9+. Из корня репозитория:
 
-The API follows the OpenAPI specification and can be integrated into frontend applications.
-
-## ✨ Features
-- 🔐 **User authentication and registration**
-- 📈 **Trading operations** (market and limit orders, order book management)
-- 💵 **Balance management** (currencies and custom assets)
-- ⚙️ **Administrative control panel** (managing instruments, user balances, and exchange settings)
-- 📜 **Optional features** (trade history, candlestick data output)
-
-## 🚀 Installation & Deployment
-
-### 📌 Prerequisites
-To run the project, ensure you have:
-- 🐳 [Docker](https://www.docker.com/)
-- 🛠️ [Make](https://www.gnu.org/software/make/)
-
-### ▶️ Running in Development Mode
-```sh
-make up
-```
-Starts the application in a Docker container.
-
-### ⏹️ Stopping the Development Environment
-```sh
-make down
+```bash
+python3 p1/src/main.py
 ```
 
-### 🔥 Running in Production Mode
-```sh
-make up-prod
-```
-Starts the production-ready version of the application.
+Откройте [http://127.0.0.1:8000/](http://127.0.0.1:8000/), нажмите **«Показать демо-сделку»**. Алиса получит 1 BOCH и будет иметь 9 900 RUB; в стакане останется продажа 1 BOCH по 100 RUB. Выберите Боба и отмените его заявку: резерв вернётся, стакан опустеет. Подробные шаги, примеры API и ошибочного ввода — в [README практики](p1/README.md).
 
-### ❌ Stopping the Production Environment
-```sh
-make down-prod
+## Тесты практики 1
+
+```bash
+cd p1
+python3 -m unittest discover -s tests -v
 ```
 
-### 📂 Running Migrations
-```sh
+Проверяются торговые правила, отказ без изменения состояния, права на отмену, HTTP API и загрузка страницы. Для сдачи скопируйте `p1/` в `students/КрутиковИД/p1/` репозитория курса. Готовая локальная копия находится в `.devcontainer/docs/Zadania-main/students/КрутиковИД/p1/`; в PR курса нужно включать **только эту папку**. Строка 59 `students.csv` — `КрутиковИД`.
+
+## Исходный сервис
+
+Для развития проекта сохранён API на FastAPI с PostgreSQL, миграциями Alembic и тестами на `pytest`. Его конфигурация находится в `example.env`, команды — в `Makefile`. Для локального запуска нужны `uv`, Docker и свободные порты 5432 и 8000:
+
+```bash
+cp example.env .env
+make up-dev
 make migrate
-```
-Applies database migrations.
-
-### 📦 Installing Dependencies
-```sh
-make install-deps
-```
-
-### 🔍 Running Linter & Formatting Code
-```sh
-make lint
-make format
-```
-
-### 🧪 Running Tests
-```sh
-make test
-```
-
-### 🚀 Starting the Application
-```sh
 make start
 ```
 
-## 📚 API Documentation
-The API is documented using OpenAPI and can be explored via [Swagger Editor](https://editor-next.swagger.io) using the provided `openapi.json` file.
-
-## ⚠️ Disclaimer
-**This is an educational project and is not suitable for real-world financial transactions.** It is intended for learning and demonstration purposes only.
-
-## 📜 License
-This project is licensed under the MIT License.
+Документация API после запуска: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs). Для P1 используется отдельный сервер выше; одновременно они не могут занимать порт 8000.

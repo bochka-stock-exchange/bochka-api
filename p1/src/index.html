@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Бочка — учебная биржа</title>
+  <style>
+    :root { font-family: Inter, system-ui, -apple-system, sans-serif; color: #eef4f3; background: #0a171c; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: radial-gradient(circle at 80% 0%, #19383e 0, transparent 38%), #0a171c; }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    header { border-bottom: 1px solid #29444a; padding: 18px max(24px, calc((100vw - 1150px)/2)); display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .brand { font-weight: 900; font-size: 25px; letter-spacing: -.05em; }
+    .brand span { color: #a9ef66; }
+    .tag { color: #a9bfc0; font-size: 13px; border: 1px solid #34535a; border-radius: 30px; padding: 7px 11px; }
+    main { max-width: 1150px; margin: auto; padding: 32px 24px 60px; }
+    .hero { display: flex; justify-content: space-between; gap: 30px; align-items: end; margin-bottom: 28px; }
+    h1 { margin: 0 0 8px; font-size: clamp(32px, 5vw, 50px); letter-spacing: -.06em; line-height: 1.05; }
+    .muted { color: #a9bfc0; }
+    .hero p { max-width: 600px; margin: 0; line-height: 1.5; }
+    .switch { display: flex; align-items: center; gap: 10px; background: #152a30; border: 1px solid #315057; padding: 7px 12px; border-radius: 12px; white-space: nowrap; }
+    .switch label { color: #a9bfc0; font-size: 12px; }
+    .switch select { background: transparent; color: #eef4f3; border: 0; font-weight: 700; outline: none; }
+    .switch option { color: #112025; }
+    .grid { display: grid; grid-template-columns: 1.25fr .9fr; gap: 18px; }
+    .card { background: #14272d; border: 1px solid #315057; border-radius: 18px; padding: 24px; box-shadow: 0 15px 35px #0002; }
+    h2 { font-size: 18px; letter-spacing: -.025em; margin: 0 0 17px; }
+    .eyebrow { color: #a9ef66; text-transform: uppercase; letter-spacing: .12em; font-weight: 800; font-size: 11px; margin-bottom: 9px; }
+    .quote { display: flex; align-items: baseline; gap: 10px; border-bottom: 1px solid #315057; padding-bottom: 18px; margin-bottom: 19px; }
+    .quote strong { font-size: 35px; letter-spacing: -.05em; }
+    .quote span { color: #a9bfc0; font-size: 13px; }
+    .balances { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .balance { background: #1a3238; border-radius: 12px; padding: 13px 15px; }
+    .balance small { display: block; color: #a9bfc0; margin-bottom: 5px; }
+    .balance strong { font-size: 23px; }
+    .balance em { font-style: normal; font-size: 12px; color: #a9bfc0; margin-left: 5px; }
+    .book { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .book h3 { font-size: 12px; letter-spacing: .09em; text-transform: uppercase; margin: 0 0 10px; color: #a9bfc0; }
+    .levels { min-height: 104px; }
+    .level { display: flex; justify-content: space-between; padding: 8px 0; border-top: 1px solid #29444a; font-variant-numeric: tabular-nums; }
+    .bid { color: #a9ef66; } .ask { color: #ff978d; }
+    .empty { color: #819fa2; font-size: 13px; line-height: 1.5; }
+    .trade { margin-top: 18px; }
+    .fields { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .field label { display: block; font-size: 12px; color: #a9bfc0; margin-bottom: 6px; }
+    .field input, .field select { width: 100%; background: #0e2025; border: 1px solid #3d5960; border-radius: 10px; color: #eef4f3; min-height: 42px; padding: 8px 10px; outline: none; }
+    .field input:focus, .field select:focus { border-color: #a9ef66; }
+    .actions { display: flex; align-items: center; gap: 14px; margin-top: 16px; flex-wrap: wrap; }
+    .primary { border: 0; border-radius: 10px; padding: 12px 18px; background: #a9ef66; color: #102017; font-weight: 800; }
+    .primary:hover { background: #c4ff8f; }
+    .secondary { border: 1px solid #628178; color: #d8f1dd; background: transparent; border-radius: 10px; padding: 11px 16px; font-weight: 700; }
+    .secondary:hover { background: #1c3a3a; }
+    .message { min-height: 22px; color: #a9ef66; font-size: 13px; }
+    .message.error { color: #ff978d; }
+    .orders { margin-top: 18px; }
+    .orders-head { display: flex; align-items: center; justify-content: space-between; }
+    .orders-head button { background: transparent; border: 0; color: #a9ef66; font-size: 13px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { color: #a9bfc0; font-weight: 500; text-align: left; border-bottom: 1px solid #315057; padding: 10px 8px; }
+    td { border-bottom: 1px solid #29444a; padding: 13px 8px; font-variant-numeric: tabular-nums; }
+    td:last-child { text-align: right; }
+    .cancel { color: #ff978d; border: 0; background: transparent; font-size: 12px; }
+    .hint { margin-top: 12px; color: #a9bfc0; font-size: 12px; }
+    @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } .hero { align-items: start; flex-direction: column; } .fields { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 480px) { .fields { grid-template-columns: 1fr 1fr; } .card { padding: 18px; } header { padding: 16px 24px; } }
+  </style>
+</head>
+<body>
+  <header><div class="brand">● bochka<span>.</span></div><div class="tag">Учебная биржа · P1</div></header>
+  <main>
+    <div class="hero">
+      <div><h1>Торги без лишнего.</h1><p class="muted">Один инструмент, два участника и настоящий стакан заявок. Все суммы в целых рублях; данные сбрасываются при перезапуске сервера.</p></div>
+      <div class="switch"><label for="user">Участник</label><select id="user"><option value="demo-alice">Алиса</option><option value="demo-bob">Боб</option></select></div>
+    </div>
+    <div class="grid">
+      <section class="card"><div class="eyebrow">Инструмент</div><div class="quote"><strong>BOCH</strong><span>Акция Бочка · расчёты в RUB</span></div><h2>Доступный баланс</h2><div class="balances"><div class="balance"><small>Рубли</small><strong id="rub">—</strong><em>RUB</em></div><div class="balance"><small>Акции</small><strong id="boch">—</strong><em>BOCH</em></div></div><p class="hint">Средства под активными лимитными заявками зарезервированы и не входят в доступный баланс.</p></section>
+      <section class="card"><h2>Стакан BOCH</h2><div class="book"><div><h3>Покупка</h3><div class="levels" id="bids"></div></div><div><h3>Продажа</h3><div class="levels" id="asks"></div></div></div><p class="hint">Лучшая цена — сверху. Обновляется после каждой операции.</p></section>
+    </div>
+    <section class="card trade"><h2>Новая заявка</h2><form id="order-form"><div class="fields"><div class="field"><label for="side">Действие</label><select id="side"><option value="BUY">Купить</option><option value="SELL">Продать</option></select></div><div class="field"><label for="kind">Тип</label><select id="kind"><option value="limit">Лимитная</option><option value="market">Рыночная</option></select></div><div class="field"><label for="qty">Количество</label><input id="qty" type="number" min="1" step="1" value="1" required></div><div class="field" id="price-field"><label for="price">Цена, RUB</label><input id="price" type="number" min="1" step="1" value="100" required></div></div><div class="actions"><button class="primary" type="submit">Разместить заявку</button><button class="secondary" type="button" id="demo">Показать демо-сделку</button><span class="message" id="message" role="status"></span></div></form><p class="hint">Демо-сделка: Боб продаёт 2 BOCH по 100 RUB, Алиса покупает 1 BOCH рыночной заявкой.</p></section>
+    <section class="card orders"><div class="orders-head"><h2>Мои заявки</h2><button type="button" id="refresh">Обновить</button></div><div style="overflow-x:auto"><table><thead><tr><th>Сторона</th><th>Тип</th><th>Количество</th><th>Цена</th><th>Статус</th><th></th></tr></thead><tbody id="orders"></tbody></table></div></section>
+  </main>
+  <script>
+    const byId = id => document.getElementById(id);
+    const user = byId('user');
+    const message = byId('message');
+    function say(text, error = false) { message.textContent = text; message.classList.toggle('error', error); }
+    async function api(path, options = {}, token = user.value) {
+      const response = await fetch(path, { ...options, headers: { 'Authorization': `TOKEN ${token}`, 'Content-Type': 'application/json' } });
+      const body = await response.json();
+      if (!response.ok) throw new Error(body.error || `HTTP ${response.status}`);
+      return body;
+    }
+    function drawLevels(id, levels) {
+      const box = byId(id); box.replaceChildren();
+      if (!levels.length) { const empty = document.createElement('div'); empty.className = 'empty'; empty.textContent = 'Пока нет заявок'; box.append(empty); return; }
+      for (const level of levels) { const row = document.createElement('div'); row.className = `level ${id === 'bids' ? 'bid' : 'ask'}`; const price = document.createElement('span'); price.textContent = `${level.price} ₽`; const qty = document.createElement('span'); qty.textContent = `${level.qty} шт.`; row.append(price, qty); box.append(row); }
+    }
+    async function refresh() {
+      try {
+        const [balances, book, orders] = await Promise.all([api('/api/balances'), api('/api/orderbook/BOCH'), api('/api/orders')]);
+        byId('rub').textContent = balances.RUB.toLocaleString('ru-RU'); byId('boch').textContent = balances.BOCH.toLocaleString('ru-RU');
+        drawLevels('bids', book.bids); drawLevels('asks', book.asks);
+        const table = byId('orders'); table.replaceChildren();
+        for (const order of orders.slice().reverse()) {
+          const row = document.createElement('tr');
+          const values = [order.side === 'BUY' ? 'Покупка' : 'Продажа', order.price === null ? 'Рыночная' : 'Лимитная', `${order.filled} / ${order.qty}`, order.price === null ? 'По рынку' : `${order.price} ₽`, {NEW:'Активна',PARTIALLY_EXECUTED:'Исполнена частично',EXECUTED:'Исполнена',CANCELLED:'Отменена'}[order.status]];
+          for (const value of values) { const cell = document.createElement('td'); cell.textContent = value; row.append(cell); }
+          const action = document.createElement('td');
+          if (order.status === 'NEW' || order.status === 'PARTIALLY_EXECUTED') { const button = document.createElement('button'); button.className = 'cancel'; button.textContent = 'Отменить'; button.onclick = async () => { try { await api(`/api/orders/${order.id}`, {method:'DELETE'}); say('Заявка отменена; резерв возвращён.'); await refresh(); } catch (error) { say(error.message, true); } }; action.append(button); }
+          row.append(action); table.append(row);
+        }
+        if (!orders.length) { const row = document.createElement('tr'); const cell = document.createElement('td'); cell.colSpan = 6; cell.className = 'empty'; cell.textContent = 'Заявок пока нет'; row.append(cell); table.append(row); }
+      } catch (error) { say(error.message, true); }
+    }
+    byId('kind').onchange = () => { const market = byId('kind').value === 'market'; byId('price-field').hidden = market; byId('price').required = !market; };
+    byId('order-form').onsubmit = async event => {
+      event.preventDefault();
+      const payload = { ticker:'BOCH', side:byId('side').value, qty:Number(byId('qty').value), price:byId('kind').value === 'market' ? null : Number(byId('price').value) };
+      try { const order = await api('/api/orders', {method:'POST', body:JSON.stringify(payload)}); say(`Заявка создана: ${order.status}, исполнено ${order.filled} из ${order.qty}.`); await refresh(); } catch (error) { say(error.message, true); }
+    };
+    byId('demo').onclick = async () => { try { await api('/api/orders', {method:'POST', body:JSON.stringify({ticker:'BOCH',side:'SELL',qty:2,price:100})}, 'demo-bob'); await api('/api/orders', {method:'POST', body:JSON.stringify({ticker:'BOCH',side:'BUY',qty:1,price:null})}, 'demo-alice'); user.value = 'demo-alice'; say('Сделка исполнена: Алиса купила 1 BOCH за 100 RUB.'); await refresh(); } catch (error) { say(error.message, true); } };
+    user.onchange = () => { say(''); refresh(); }; byId('refresh').onclick = refresh; refresh();
+  </script>
+</body>
+</html>

@@ -186,3 +186,7 @@ mongodb.key
 data/
 tests_data/
 tests.env
+
+# Local task artifacts and supplied course materials
+.claude-runner/
+.devcontainer/docs/
