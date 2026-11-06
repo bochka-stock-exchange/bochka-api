@@ -1,3 +1,4 @@
+import tenacity
 from fastapi import FastAPI, Request, status
 from fastapi.responses import ORJSONResponse
 
@@ -7,7 +8,10 @@ settings = config.get_settings()
 
 
 def make_error_response(
-    message: str, user_message: str, error_code: str, http_status: int
+    message: str,
+    user_message: str,
+    error_code: str,
+    http_status: int,
 ) -> ORJSONResponse:
     return ORJSONResponse(
         status_code=http_status,
@@ -21,15 +25,20 @@ def make_error_response(
 def register_error_handlers(app: FastAPI) -> None:  # noqa: C901
     @app.exception_handler(repositories.exceptions.EntityCreateError)
     def handle_entity_create_error(
-        request: Request, exc: repositories.exceptions.EntityCreateError
+        request: Request,
+        exc: repositories.exceptions.EntityCreateError,
     ) -> ORJSONResponse:
         return make_error_response(
-            str(exc), "Failed to create resource", "create_failed", status.HTTP_400_BAD_REQUEST
+            str(exc),
+            "Failed to create resource",
+            "create_failed",
+            status.HTTP_400_BAD_REQUEST,
         )
 
     @app.exception_handler(repositories.exceptions.DuplicateError)
     def handle_duplicate_error(
-        request: Request, exc: repositories.exceptions.DuplicateError
+        request: Request,
+        exc: repositories.exceptions.DuplicateError,
     ) -> ORJSONResponse:
         return make_error_response(
             str(exc),
@@ -40,7 +49,8 @@ def register_error_handlers(app: FastAPI) -> None:  # noqa: C901
 
     @app.exception_handler(repositories.exceptions.EntityReadError)
     def handle_entity_read_error(
-        request: Request, exc: repositories.exceptions.EntityReadError
+        request: Request,
+        exc: repositories.exceptions.EntityReadError,
     ) -> ORJSONResponse:
         return make_error_response(
             str(exc),
@@ -51,31 +61,44 @@ def register_error_handlers(app: FastAPI) -> None:  # noqa: C901
 
     @app.exception_handler(repositories.exceptions.EntityUpdateError)
     def handle_entity_update_error(
-        request: Request, exc: repositories.exceptions.EntityUpdateError
+        request: Request,
+        exc: repositories.exceptions.EntityUpdateError,
     ) -> ORJSONResponse:
         return make_error_response(
-            str(exc), "Failed to update resource", "update_failed", status.HTTP_400_BAD_REQUEST
+            str(exc),
+            "Failed to update resource",
+            "update_failed",
+            status.HTTP_400_BAD_REQUEST,
         )
 
     @app.exception_handler(repositories.exceptions.EntityDeleteError)
     def handle_entity_delete_error(
-        request: Request, exc: repositories.exceptions.EntityDeleteError
+        request: Request,
+        exc: repositories.exceptions.EntityDeleteError,
     ) -> ORJSONResponse:
         return make_error_response(
-            str(exc), "Failed to delete resource", "delete_failed", status.HTTP_400_BAD_REQUEST
+            str(exc),
+            "Failed to delete resource",
+            "delete_failed",
+            status.HTTP_400_BAD_REQUEST,
         )
 
     @app.exception_handler(repositories.exceptions.DatabaseError)
     def handle_database_error(
-        request: Request, exc: repositories.exceptions.DatabaseError
+        request: Request,
+        exc: repositories.exceptions.DatabaseError,
     ) -> ORJSONResponse:
         return make_error_response(
-            str(exc), "Database error", "database_error", status.HTTP_500_INTERNAL_SERVER_ERROR
+            str(exc),
+            "Database error",
+            "database_error",
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
     @app.exception_handler(services.exceptions.EntityNotFoundError)
     def handle_entity_not_found(
-        request: Request, exc: services.exceptions.EntityNotFoundError
+        request: Request,
+        exc: services.exceptions.EntityNotFoundError,
     ) -> ORJSONResponse:
         return make_error_response(
             str(exc),
@@ -86,7 +109,8 @@ def register_error_handlers(app: FastAPI) -> None:  # noqa: C901
 
     @app.exception_handler(services.exceptions.PermissionDeniedError)
     def handle_permission_denied_error(
-        request: Request, exc: services.exceptions.PermissionDeniedError
+        request: Request,
+        exc: services.exceptions.PermissionDeniedError,
     ) -> ORJSONResponse:
         return make_error_response(
             str(exc),
@@ -97,7 +121,8 @@ def register_error_handlers(app: FastAPI) -> None:  # noqa: C901
 
     @app.exception_handler(services.exceptions.AuthenticationError)
     def handle_authentication_error(
-        request: Request, exc: services.exceptions.AuthenticationError
+        request: Request,
+        exc: services.exceptions.AuthenticationError,
     ) -> ORJSONResponse:
         return make_error_response(
             str(exc),
@@ -109,9 +134,18 @@ def register_error_handlers(app: FastAPI) -> None:  # noqa: C901
     @app.exception_handler(NotImplementedError)
     def handle_not_implemented_error(request: Request, exc: NotImplementedError) -> ORJSONResponse:
         return make_error_response(
-            "This feature not implemented yet",
-            "This feature not implemented yet",
+            "Not Implemented",
+            "Not Implemented",
             "not_implemented",
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+    @app.exception_handler(tenacity.RetryError)
+    def handle_retry_error(request: Request, exc: tenacity.RetryError) -> ORJSONResponse:
+        return make_error_response(
+            "Retry error",
+            "Retry error",
+            "retry_error",
             status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 

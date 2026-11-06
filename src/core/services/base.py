@@ -1,10 +1,15 @@
+from __future__ import annotations
+
 import logging
-from typing import Any, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from pydantic import BaseModel
 
 from src.core import custom_types, repositories, schemas, services
-from src.core.uow import UnitOfWork
+
+if TYPE_CHECKING:
+    from src.core.uow import UnitOfWork
+
 from src.core.utils.decorators import log_operation
 
 TCreate = TypeVar("TCreate", bound=BaseModel)
@@ -64,7 +69,11 @@ class BaseCRUD[
 
     @log_operation
     async def read_by_id(
-        self, uow: UnitOfWork, entity_id: custom_types.EntityID, *, include_deleted: bool = False
+        self,
+        uow: UnitOfWork,
+        entity_id: custom_types.EntityID,
+        *,
+        include_deleted: bool = False,
     ) -> TRead:
         entity = await self.repo.read_by_id(uow, entity_id, include_deleted=include_deleted)
         if not entity:
@@ -91,7 +100,12 @@ class BaseCRUD[
         page, limit = (pagination.page, pagination.limit) if pagination else (1, 10)
 
         entities = await self.repo.read_many(
-            uow, filters_data, sorting_data, page, limit, include_deleted=include_deleted
+            uow,
+            filters_data,
+            sorting_data,
+            page,
+            limit,
+            include_deleted=include_deleted,
         )
 
         return [await self._validate_data(entity) for entity in entities]
@@ -130,7 +144,7 @@ class BaseCRUD[
     async def _validate_data(self, entity: TModel) -> TRead:
         return self.read_schema.model_validate(entity)
 
-    async def _dump_data(self, schema: BaseModel, additional_data: dict | None = None) -> dict:  # noqa: PLR6301
+    async def _dump_data(self, schema: BaseModel, additional_data: dict | None = None) -> dict:
         dumped = schema.model_dump(exclude_unset=True)
         if additional_data:
             dumped.update(additional_data)

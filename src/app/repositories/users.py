@@ -1,7 +1,14 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from sqlalchemy import select
 
 from src import core
 from src.app import models
+
+if TYPE_CHECKING:
+    from src.core.uow import UnitOfWork
 
 
 class Users(core.repositories.sqlalchemy.BaseCRUD[models.User]):
@@ -9,7 +16,11 @@ class Users(core.repositories.sqlalchemy.BaseCRUD[models.User]):
         super().__init__(models.User)
 
     async def read_by_name(
-        self, uow: core.UnitOfWork, name: str, *, include_deleted: bool = False
+        self,
+        uow: UnitOfWork,
+        name: str,
+        *,
+        include_deleted: bool = False,
     ) -> models.User | None:
         try:
             session = uow.postgres_session
@@ -26,8 +37,5 @@ class Users(core.repositories.sqlalchemy.BaseCRUD[models.User]):
                     extra={"user_name": name, "exists": False},
                 )
             return user
-        except Exception as e:
-            raise core.repositories.exceptions.DatabaseError(
-                self.__class__.__name__,
-                str(e),
-            ) from e
+        except Exception:
+            raise

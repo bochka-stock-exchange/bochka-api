@@ -1,8 +1,11 @@
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
-from typing import Any, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar
 
-from src.core.uow import UnitOfWork
+if TYPE_CHECKING:
+    from src.core.uow import UnitOfWork
 
 ModelType = TypeVar("ModelType")
 
@@ -18,7 +21,11 @@ class BaseCRUD[ModelType](ABC):
 
     @abstractmethod
     async def read_by_id(
-        self, uow: UnitOfWork, entity_id: Any, *, include_deleted: bool = False
+        self,
+        uow: UnitOfWork,
+        entity_id: Any,
+        *,
+        include_deleted: bool = False,
     ) -> ModelType | None:
         raise NotImplementedError
 

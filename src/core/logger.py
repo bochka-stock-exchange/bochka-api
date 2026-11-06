@@ -50,9 +50,9 @@ class CustomConsoleFormatter(Formatter):
 
     def format(self, record: LogRecord) -> str:
         level_color = self.COLORS.get(record.levelname, self.COLORS["RESET"])
-        timestamp = f"{self.COLORS['TIMESTAMP']}[{self.formatTime(record, self.datefmt)}]{self.COLORS['RESET']}"  # noqa: E501
-        level = f"{level_color}[{record.levelname}]{self.COLORS['RESET']}"
-        name = f"{self.COLORS['NAME']}[{record.name}]{self.COLORS['RESET']}"
+        timestamp = f"{self.COLORS["TIMESTAMP"]}[{self.formatTime(record, self.datefmt)}]{self.COLORS["RESET"]}"  # noqa: E501
+        level = f"{level_color}[{record.levelname}]{self.COLORS["RESET"]}"
+        name = f"{self.COLORS["NAME"]}[{record.name}]{self.COLORS["RESET"]}"
         message = f"{record.getMessage()}"
 
         formatted_message = f"{timestamp} {level} {name} {message}"
@@ -70,7 +70,7 @@ class CustomConsoleFormatter(Formatter):
 def setup_logger() -> dict:
     log_dir = Path("logs")
     log_dir.mkdir(parents=True, exist_ok=True)
-    log_file = log_dir / f"{datetime.now(UTC).strftime('%Y-%m-%d')}.log"
+    log_file = log_dir / f"{datetime.now(UTC).strftime("%Y-%m-%d")}.log"
 
     return {
         "version": 1,

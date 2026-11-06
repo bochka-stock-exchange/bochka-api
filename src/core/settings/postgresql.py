@@ -12,7 +12,9 @@ class PostgreSQLSettings(BaseSettings):
     DB: str = "postgres"
 
     model_config = SettingsConfigDict(
-        env_file=settings.env_config.ENV_FILE_PATH, extra="ignore", env_prefix="POSTGRES_"
+        env_file=settings.env_config.ENV_FILE_PATH,
+        extra="ignore",
+        env_prefix="POSTGRES_",
     )
 
     @computed_field

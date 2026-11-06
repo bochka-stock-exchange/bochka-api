@@ -1,22 +1,33 @@
-from sqlalchemy.exc import OperationalError
-from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
+import logging
+
+from tenacity import (
+    retry,
+    retry_if_exception,
+    stop_after_attempt,
+    wait_fixed,
+    wait_random,
+)
+
+from src import core
 
 
-def is_serialization_failure(exception: BaseException) -> bool:
-    if isinstance(exception, OperationalError):
-        orig = getattr(exception, "orig", None)
-
-        if orig and getattr(orig, "pgcode", None) == "40001":
-            return True
-
-        return "40001" in str(exception)
+def is_unexpected_error(exception: BaseException) -> bool:
+    if not (
+        isinstance(
+            exception,
+            core.repositories.exceptions.RepositoryError | core.services.exceptions.ServiceError,
+        )
+    ):
+        logger = logging.getLogger("retry")
+        logger.error("Retry error", extra={"original_error": str(exception)})
+        return True
     return False
 
 
 def retry_on_serialization():
     return retry(
         reraise=False,
-        stop=stop_after_attempt(3),
-        wait=wait_exponential(multiplier=0.1, min=0.1, max=1),
-        retry=retry_if_exception(is_serialization_failure),
+        stop=stop_after_attempt(5),
+        wait=wait_fixed(0.1) + wait_random(0.3, 1),
+        retry=retry_if_exception(is_unexpected_error),
     )

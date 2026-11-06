@@ -34,7 +34,7 @@ async def get_current_user(
 
     if not token.startswith(token_prefix):
         raise core.services.exceptions.AuthenticationError(
-            f"Invalid token format: {token}. Should be: {token_prefix} <api_key>"
+            f"Invalid token format: {token}. Should be: {token_prefix} <api_key>",
         )
 
     api_key = token[len(token_prefix) + 1 :].strip()
@@ -50,7 +50,7 @@ def get_admin_user(
 ) -> schemas.users.Read:
     if current_user.role != UserRole.ADMIN:
         raise core.services.exceptions.PermissionDeniedError(
-            f"{UserRole.ADMIN} role required. Your role: {current_user.role}"
+            f"{UserRole.ADMIN} role required. Your role: {current_user.role}",
         )
     return current_user
 

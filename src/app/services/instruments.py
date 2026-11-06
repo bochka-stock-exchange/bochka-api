@@ -1,6 +1,13 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from src import core
 from src.app import models, repositories, schemas
 from src.core import services
+
+if TYPE_CHECKING:
+    from src.core.uow import UnitOfWork
 
 
 class Instruments(
@@ -23,9 +30,7 @@ class Instruments(
             filters_schema=schemas.instruments.Filters,
         )
 
-    async def get_all_instruments(
-        self, uow: core.UnitOfWork
-    ) -> list[schemas.instruments.ReadTicker]:
+    async def get_all_instruments(self, uow: UnitOfWork) -> list[schemas.instruments.ReadTicker]:
         instruments = await self.repo.get_all_instruments(uow)
 
         return [
@@ -33,9 +38,17 @@ class Instruments(
         ]
 
     async def read_by_ticker(
-        self, uow: core.UnitOfWork, ticker: str, *, include_deleted: bool = False
+        self,
+        uow: UnitOfWork,
+        ticker: str,
+        *,
+        include_deleted: bool = False,
     ) -> schemas.instruments.Read:
-        instrument = await self.repo.read_by_ticker(uow, ticker, include_deleted=include_deleted)
+        instrument = await self.read_many(
+            uow,
+            filters=schemas.instruments.Filters(ticker=ticker),
+            include_deleted=include_deleted,
+        )
 
         if not instrument:
             raise services.exceptions.EntityNotFoundError(
@@ -43,9 +56,9 @@ class Instruments(
                 f"ticker: {ticker}",
             )
 
-        return await self._validate_data(instrument)
+        return instrument[0]
 
-    async def delete_by_ticker(self, uow: core.UnitOfWork, ticker: str) -> bool:
+    async def delete_by_ticker(self, uow: UnitOfWork, ticker: str) -> bool:
         instrument = await self.repo.read_by_ticker(uow, ticker)
 
         if not instrument:

@@ -10,7 +10,7 @@ class EntityNotFoundError(ServiceError):
 
     def __init__(self, service_name: str, identifier: custom_types.EntityID):
         super().__init__(
-            f"{service_name} service failed to find entity with identifier ({identifier})"
+            f"{service_name} service failed to find entity with identifier ({identifier})",
         )
 
 

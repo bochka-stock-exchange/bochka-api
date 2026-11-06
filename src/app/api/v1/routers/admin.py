@@ -4,8 +4,9 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, status
 
 from src import core
-from src.app import models, schemas
+from src.app import schemas, services
 from src.app.api import dependencies
+from src.core.utils.decorators import retry_on_serialization
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -16,13 +17,14 @@ router = APIRouter(prefix="/admin", tags=["admin"])
     dependencies=[Depends(dependencies.permissions.get_admin_user)],
     response_model=schemas.instruments.CreateResponse,
 )
+@retry_on_serialization()
 async def create_instrument(
     instrument: schemas.instruments.Create,
     instruments_service: dependencies.services.Instruments,
     uow: dependencies.uow.Postgres,
 ):
     return schemas.instruments.CreateResponse(
-        success=bool(await instruments_service.create(uow, instrument))
+        success=bool(await instruments_service.create(uow, instrument)),
     )
 
 
@@ -31,6 +33,7 @@ async def create_instrument(
     dependencies=[Depends(dependencies.permissions.get_admin_user)],
     response_model=schemas.instruments.Delete,
 )
+@retry_on_serialization()
 async def delete_instrument(
     ticker: schemas.instruments.Ticker,
     service: dependencies.services.Instruments,
@@ -44,6 +47,7 @@ async def delete_instrument(
     dependencies=[Depends(dependencies.permissions.get_admin_user)],
     response_model=schemas.users.Auth,
 )
+@retry_on_serialization()
 async def delete_user(
     user_id: UUID,
     users_service: dependencies.services.Users,
@@ -62,13 +66,13 @@ async def delete_user(
 @router.post(
     "/balance/deposit",
     dependencies=[Depends(dependencies.permissions.get_admin_user)],
-    response_model=schemas.balance_operations.OperationSuccess,
+    response_model=schemas.balance.OperationSuccess,
 )
+@retry_on_serialization()
 async def deposit(
     uow: dependencies.uow.Postgres,
-    balance_operation: schemas.balance_operations.CreateRequest,
+    balance_operation: schemas.balance.CreateRequest,
     balance_service: dependencies.services.Balances,
-    balance_operation_service: dependencies.services.BalanceOperations,
     user_service: dependencies.services.Users,
     instrument_service: dependencies.services.Instruments,
 ):
@@ -77,7 +81,8 @@ async def deposit(
 
     try:
         balance = await balance_service.read_by_id(
-            uow, {"user_id": balance_operation.user_id, "instrument_id": instrument.id}
+            uow,
+            {"user_id": balance_operation.user_id, "instrument_id": instrument.id},
         )
 
         await balance_service.update_by_id(
@@ -95,29 +100,19 @@ async def deposit(
             ),
         )
 
-    await balance_operation_service.create(
-        uow,
-        schemas.balance_operations.Create(
-            user_id=balance_operation.user_id,
-            amount=balance_operation.amount,
-            instrument_id=instrument.id,
-            operation_type=models.balance_operation.OperationType.DEPOSIT,
-        ),
-    )
-
-    return schemas.balance_operations.OperationSuccess(success=True)
+    return schemas.balance.OperationSuccess(success=True)
 
 
 @router.post(
     "/balance/withdraw",
     dependencies=[Depends(dependencies.permissions.get_admin_user)],
-    response_model=schemas.balance_operations.OperationSuccess,
+    response_model=schemas.balance.OperationSuccess,
 )
+@retry_on_serialization()
 async def withdraw(
     uow: dependencies.uow.Postgres,
-    balance_operation: schemas.balance_operations.CreateRequest,
+    balance_operation: schemas.balance.CreateRequest,
     balance_service: dependencies.services.Balances,
-    operation_service: dependencies.services.BalanceOperations,
     user_service: dependencies.services.Users,
     instrument_service: dependencies.services.Instruments,
 ):
@@ -126,12 +121,14 @@ async def withdraw(
 
     try:
         balance = await balance_service.read_by_id(
-            uow, {"user_id": balance_operation.user_id, "instrument_id": instrument.id}
+            uow,
+            {"user_id": balance_operation.user_id, "instrument_id": instrument.id},
         )
 
         if balance.amount < balance_operation.amount:
-            raise dependencies.exceptions.NotEnoughFundsError(
-                balance_operation.user_id, instrument.ticker
+            raise services.exceptions.InsufficientBalanceError(
+                balance_operation.user_id,
+                instrument.ticker,
             )
 
         await balance_service.update_by_id(
@@ -140,18 +137,9 @@ async def withdraw(
             schemas.balance.Update(amount=balance.amount - balance_operation.amount),
         )
     except core.services.exceptions.EntityNotFoundError:
-        raise dependencies.exceptions.NotEnoughFundsError(
-            balance_operation.user_id, instrument.ticker
+        raise services.exceptions.InsufficientBalanceError(
+            balance_operation.user_id,
+            instrument.ticker,
         ) from None
 
-    await operation_service.create(
-        uow,
-        schemas.balance_operations.Create(
-            user_id=balance_operation.user_id,
-            amount=balance_operation.amount,
-            instrument_id=instrument.id,
-            operation_type=models.balance_operation.OperationType.WITHDRAW,
-        ),
-    )
-
-    return schemas.balance_operations.OperationSuccess(success=True)
+    return schemas.balance.OperationSuccess(success=True)
